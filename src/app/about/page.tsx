@@ -1,42 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
-import Navbar from "@/components/ui/NavBar";
-import Footer from "@/components/ui/Footer";
-import FilmGrain from "@/components/ui/FilmGrain";
+import RevealFooter from "@/components/ui/RevealFooter";
 import StickyHeroReveal from "@/components/sections/StickyHeroReveal";
+import { useHud } from "@/hooks/useHud";
 
 export default function AboutPage() {
-  const [footerHeight, setFooterHeight] = useState(0);
-  const footerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  useEffect(() => {
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (let entry of entries) {
-        setFooterHeight(entry.contentRect.height);
-      }
-    });
-    if (footerRef.current) resizeObserver.observe(footerRef.current);
-    return () => resizeObserver.disconnect();
-  }, []);
+  useHud("About", [
+    "Digital creative studio",
+    "Creative direction / WebGL",
+    "Berlin — Seoul",
+  ]);
 
   return (
     <>
-      <FilmGrain />
       <main className="relative bg-zinc-100 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-100 overflow-clip transition-colors duration-500">
-        <Navbar />
-
-        <div
-          className="relative z-10 transition-colors duration-500"
-          style={{ marginBottom: `${footerHeight}px` }}
-        >
+        <RevealFooter className="transition-colors duration-500">
           {/* =======================================================
               1. THE UNIFIED HERO
               ======================================================= */}
@@ -117,19 +98,7 @@ export default function AboutPage() {
               </motion.div>
             </div>
           </div>
-        </div>
-
-        {/* =======================================================
-            3. THE STICKY FOOTER
-            ======================================================= */}
-        <div
-          ref={footerRef}
-          className="fixed bottom-0 left-0 w-full z-0 pointer-events-none"
-        >
-          <div className="pointer-events-auto">
-            <Footer />
-          </div>
-        </div>
+        </RevealFooter>
       </main>
     </>
   );

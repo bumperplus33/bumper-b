@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, use } from "react";
+import { useRef, use } from "react";
 import Image from "next/image";
 import {
   motion,
@@ -12,9 +12,8 @@ import {
 import { useTransitionRouter } from "next-view-transitions";
 import { triggerPaperPushTransition } from "@/utils/animations";
 
-import Navbar from "@/components/ui/NavBar";
-import Footer from "@/components/ui/Footer";
-import FilmGrain from "@/components/ui/FilmGrain";
+import RevealFooter from "@/components/ui/RevealFooter";
+import { useHud } from "@/hooks/useHud";
 
 // FULLY MAPPED SEQUENCE
 const PROJECT_DB: Record<string, any> = {
@@ -194,13 +193,15 @@ export default function CaseStudy({
   const router = useTransitionRouter();
   const { scrollYProgress } = useScroll();
 
-  const [footerHeight, setFooterHeight] = useState(0);
-  const footerRef = useRef<HTMLDivElement>(null);
-
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
 
   const project = PROJECT_DB[slug] || PROJECT_DB["native-instruments"];
+  useHud(project.name, [
+    `Client: ${project.client}`,
+    `Role: ${project.role}`,
+    `${project.location} / ${project.timeline}`,
+  ]);
 
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
@@ -227,18 +228,6 @@ export default function CaseStudy({
     cursorY.set(e.clientY - rect.top);
   };
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  useEffect(() => {
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (let entry of entries) setFooterHeight(entry.contentRect.height);
-    });
-    if (footerRef.current) resizeObserver.observe(footerRef.current);
-    return () => resizeObserver.disconnect();
-  }, []);
-
   const handleNavigation = (e: React.MouseEvent, targetSlug: string) => {
     e.preventDefault();
     if (typeof triggerPaperPushTransition === "function")
@@ -253,14 +242,8 @@ export default function CaseStudy({
 
   return (
     <>
-      <FilmGrain />
       <main className="relative bg-zinc-100 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-100 overflow-clip selection:bg-[#CCFF00] selection:text-zinc-900 transition-colors duration-500">
-        <Navbar />
-
-        <div
-          className="relative z-10 bg-zinc-100 dark:bg-zinc-950 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] transition-colors duration-500"
-          style={{ marginBottom: `${footerHeight}px` }}
-        >
+        <RevealFooter className="bg-zinc-100 dark:bg-zinc-950 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] transition-colors duration-500">
           <section className="pt-40 md:pt-56 px-6 md:px-12 max-w-[1800px] mx-auto relative z-10">
             <div className="overflow-hidden py-10 -my-10">
               <motion.h1
@@ -412,16 +395,7 @@ export default function CaseStudy({
               View
             </motion.div>
           </a>
-        </div>
-
-        <div
-          ref={footerRef}
-          className="fixed bottom-0 left-0 w-full z-0 pointer-events-none"
-        >
-          <div className="pointer-events-auto">
-            <Footer />
-          </div>
-        </div>
+        </RevealFooter>
       </main>
     </>
   );

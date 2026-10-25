@@ -1,88 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { useTransitionRouter } from "next-view-transitions";
 import { triggerPaperPushTransition } from "@/utils/animations";
 
-import Navbar from "@/components/ui/NavBar";
-import Footer from "@/components/ui/Footer";
-import FilmGrain from "@/components/ui/FilmGrain";
+import RevealFooter from "@/components/ui/RevealFooter";
 import StickyHeroReveal from "@/components/sections/StickyHeroReveal";
 import SingletonGlitch from "@/components/webgl/SingletonGlitch";
 import FeaturedWorks from "@/components/sections/FeaturedWorks";
-
-const PROJECTS = [
-  {
-    name: "Native Instruments",
-    location: "Berlin / 2023",
-    src: "/images/project-1.jpg",
-    slug: "native-instruments",
-    role: "Lead Agency",
-    id: "01",
-  },
-  {
-    name: "Oura",
-    location: "Oulu / 2023",
-    src: "/images/project-2.jpg",
-    slug: "oura",
-    role: "Digital Partner",
-    id: "02",
-  },
-  {
-    name: "Hender Scheme",
-    location: "Tokyo / 2023",
-    src: "/images/project-3.jpg",
-    slug: "hender-scheme",
-    role: "Creative Direction",
-    id: "03",
-  },
-  {
-    name: "B&O Play",
-    location: "Struer / 2022",
-    src: "/images/project-4.jpg",
-    slug: "bo-play",
-    role: "Interactive Design",
-    id: "04",
-  },
-  {
-    name: "Nothing",
-    location: "London / 2022",
-    src: "/images/project-5.jpg",
-    slug: "nothing",
-    role: "Technical Partner",
-    id: "05",
-  },
-  {
-    name: "Gentle Monster",
-    location: "Seoul / 2022",
-    src: "/images/project-6.jpg",
-    slug: "gentle-monster",
-    role: "Lead Agency",
-    id: "06",
-  },
-  {
-    name: "Puma POV",
-    location: "Global / 2021",
-    src: "/images/project-7.jpg",
-    slug: "puma-pov",
-    role: "Creative Design",
-    id: "07",
-  },
-  {
-    name: "Jaarvis Noir",
-    location: "Paris / 2021",
-    src: "/images/project-8.jpg",
-    slug: "jaarvis",
-    role: "Event",
-    id: "08",
-  },
-];
+import { PROJECTS } from "@/data/projects";
+import { useHud } from "@/hooks/useHud";
 
 export default function WorkGallery() {
-  const [footerHeight, setFooterHeight] = useState(0);
-  const footerRef = useRef<HTMLDivElement>(null);
-
+  useHud("Archive", [
+    "Selected works",
+    `${PROJECTS.length} projects`,
+    "2021—2023",
+  ]);
   const router = useTransitionRouter();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -93,30 +28,12 @@ export default function WorkGallery() {
     });
   };
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  useEffect(() => {
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (let entry of entries) setFooterHeight(entry.contentRect.height);
-    });
-    if (footerRef.current) resizeObserver.observe(footerRef.current);
-    return () => resizeObserver.disconnect();
-  }, []);
-
   const isCinematicMode = hoveredIndex !== null;
 
   return (
     <>
-      <FilmGrain />
       <main className="relative min-h-screen text-zinc-900 dark:text-zinc-100 overflow-clip">
-        <Navbar />
-
-        <div
-          className="relative z-10"
-          style={{ marginBottom: `${footerHeight}px` }}
-        >
+        <RevealFooter>
           {/* THE FIX: Reverted back to "ARCHIVE" */}
           <StickyHeroReveal
             title="ARCHIVE"
@@ -194,16 +111,7 @@ export default function WorkGallery() {
               </div>
             </div>
           </div>
-        </div>
-
-        <div
-          ref={footerRef}
-          className="fixed bottom-0 left-0 w-full z-0 pointer-events-none"
-        >
-          <div className="pointer-events-auto">
-            <Footer />
-          </div>
-        </div>
+        </RevealFooter>
       </main>
     </>
   );

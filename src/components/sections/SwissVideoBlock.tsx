@@ -1,13 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import localFont from "next/font/local";
 import InteractiveVideoBlock from "../ui/InteractiveVideoBlock";
 
-const neueMontreal = localFont({
-  src: "../../../public/fonts/PPNeueMontreal-Bold.otf",
-  variable: "--font-neue",
-});
 
 export default function SwissVideoBlock() {
   return (
@@ -104,7 +99,7 @@ export default function SwissVideoBlock() {
             </p>
 
             <h2
-              className={`text-[18vw] md:text-[5vw] tracking-tighter leading-[0.82] uppercase text-zinc-900 dark:text-zinc-100 transition-colors duration-500 ${neueMontreal.className}`}
+              className="text-[18vw] md:text-[5vw] tracking-tighter leading-[0.82] uppercase text-zinc-900 dark:text-zinc-100 transition-colors duration-500 font-neue"
             >
               THE <br />
               MOTION <br />

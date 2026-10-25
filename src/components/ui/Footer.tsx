@@ -1,12 +1,7 @@
 "use client";
 
-import localFont from "next/font/local";
 import Link from "next/link";
 
-const neueMontreal = localFont({
-  src: "../../../public/fonts/PPNeueMontreal-Bold.otf",
-  variable: "--font-neue",
-});
 
 export default function Footer() {
   return (
@@ -30,7 +25,7 @@ export default function Footer() {
           ========================================= */}
       <div className="flex-grow flex items-center justify-center w-full">
         <div
-          className={`text-[25vw] leading-[0.75] tracking-tighter uppercase text-zinc-900 dark:text-zinc-100 transition-colors duration-500 ${neueMontreal.className}`}
+          className="text-[25vw] leading-[0.75] tracking-tighter uppercase text-zinc-900 dark:text-zinc-100 transition-colors duration-500 font-neue"
         >
           SOJU
         </div>
