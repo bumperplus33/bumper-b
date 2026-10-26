@@ -103,9 +103,7 @@ const MaskText = ({
         : "text-left";
 
   return (
-    <div
-      className={`relative w-full h-full overflow-hidden block ${className}`}
-    >
+    <div className={`relative w-full overflow-hidden block ${className}`}>
       <motion.div
         variants={{ initial: { top: "0%" }, hover: { top: "-100%" } }}
         transition={{ duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
@@ -253,16 +251,25 @@ export default function FeaturedWorks() {
               onMouseEnter={() => handleMouseEnterRow(index)}
               className="hidden md:flex w-full h-[55px] justify-between items-start"
             >
-              <MaskText align="left" className="flex-1 type-micro pt-[6px]">
+              <MaskText
+                align="left"
+                className="flex-1 h-full mt-[12px] type-micro"
+              >
                 {project.client}
               </MaskText>
               <MaskText
                 align="center"
-                className="flex-[4] font-neue text-[60px] tracking-[-0.02em] leading-none"
+                // Taller than the 55px row so descenders sit inside their own
+                // mask: the rows still stack at 55px, but no copy is clipped
+                // or peeks in from the next position
+                className="flex-[4] h-[1.25em] font-neue text-[60px] tracking-[-0.02em] leading-[1.25]"
               >
                 {project.name}
               </MaskText>
-              <MaskText align="right" className="flex-1 type-micro pt-[6px]">
+              <MaskText
+                align="right"
+                className="flex-1 h-full mt-[12px] type-micro"
+              >
                 {project.tag}
               </MaskText>
             </motion.div>
