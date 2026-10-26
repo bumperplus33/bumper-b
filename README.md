@@ -161,10 +161,4 @@ Components, packages and assets that no page used were removed in one cleanup co
 
 ## Known issues
 
-- **Lint:** `npm run lint` reports 7 problems (4 errors, 3 warnings), all in older code. `next build` does not run ESLint, so it still passes.
-  - Errors:
-    - An `any` type in `PROJECT_DB`.
-    - Two `setState` calls inside effects (`StickyHeroReveal`, `GlobalCanvas`).
-    - One mutated hook value (`SingletonGlitch`).
-  - Warnings: three plain `<img>` tags in `FeaturedWorks`.
 - **Every-frame rendering:** the canvas renders every frame on every page, including pages with no WebGL.

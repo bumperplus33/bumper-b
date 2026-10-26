@@ -26,13 +26,13 @@ export default function StickyHeroReveal({
     typeof window === "undefined" ? 0 : Math.min(y / window.innerHeight, 1),
   );
 
+  // Hold the title fully opaque for its first moments, until the scroll
+  // position has settled after navigation. Each page mounts its own hero,
+  // so this starts false on every route without resetting it here.
   useEffect(() => {
-    setIsReady(false);
-    const timer = setTimeout(() => {
-      setIsReady(true);
-    }, 150);
+    const timer = setTimeout(() => setIsReady(true), 150);
     return () => clearTimeout(timer);
-  }, [pathname]);
+  }, []);
 
   const sojuOpacity = useTransform(motionScroll, [0, 0.5], [1, 0]);
   const sojuScale = useTransform(motionScroll, [0, 1], [1, 0.85]);

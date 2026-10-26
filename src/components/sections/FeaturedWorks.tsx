@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, useSpring, useMotionValue } from "framer-motion";
+import Image from "next/image";
 import { useTransitionRouter } from "next-view-transitions";
 import { triggerPaperPushTransition } from "@/utils/animations"; // <-- Import
 
@@ -189,14 +190,13 @@ export default function FeaturedWorks() {
           >
             {/* MOBILE LAYOUT */}
             <div className="flex md:hidden flex-col w-full gap-4 py-8 border-b border-zinc-200 dark:border-zinc-800">
-              {/* Added loading="lazy" and decoding="async" to mobile fallback images */}
               <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-zinc-200 dark:bg-zinc-800">
-                <img
+                <Image
                   src={project.src}
                   alt={project.name}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                  fill
+                  sizes="100vw"
+                  className="object-cover transition-transform duration-700 hover:scale-105"
                 />
               </div>
               <div className="flex justify-between items-end">
@@ -285,11 +285,13 @@ export default function FeaturedWorks() {
                     willChange: "clip-path",
                   }}
                 >
-                  <img
+                  {/* Decorative: the link text already names the project */}
+                  <Image
                     src={proj.src}
-                    alt={proj.name}
-                    className="w-full h-full object-cover"
-                    decoding="async"
+                    alt=""
+                    fill
+                    sizes="225px"
+                    className="object-cover"
                   />
                 </motion.div>
               );
@@ -327,11 +329,13 @@ export default function FeaturedWorks() {
                     willChange: "clip-path",
                   }}
                 >
-                  <img
+                  {/* Decorative: the link text already names the project */}
+                  <Image
                     src={proj.src}
-                    alt={proj.name}
-                    className="w-full h-full object-cover"
-                    decoding="async"
+                    alt=""
+                    fill
+                    sizes="225px"
+                    className="object-cover"
                   />
                 </motion.div>
               );
