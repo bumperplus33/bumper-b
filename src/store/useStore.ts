@@ -10,23 +10,13 @@ interface AppState {
   scrollVelocity: number;
   setScroll: (progress: number, velocity: number) => void;
 
-  // 3. GLOBAL PROJECT TRACKING
-  activeProject: number;
-  setActiveProject: (index: number) => void;
-
-  // 4. HOMEPAGE HORIZONTAL PARALLAX STATE
-  horizontalGlProgress: number;
-  horizontalGlY: number;
-  isHorizontalGalleryActive: boolean;
-  setHorizontalGlProgress: (progress: number) => void;
-  setHorizontalGlY: (y: number) => void;
-  setHorizontalGalleryActive: (active: boolean) => void;
-
-  // 5. BROWSER PIPELINE STATE
+  // 3. BROWSER PIPELINE STATE: SmoothScrollProvider stops Lenis and locks the
+  // body while this is true. No route sets it yet; it's there for a future
+  // immersive, scroll-locked WebGL route.
   isScrollLocked: boolean;
   setScrollLocked: (locked: boolean) => void;
 
-  // 6. HUD: the metadata block in the top-right corner, set per page
+  // 4. HUD: the metadata block in the top-right corner, set per page
   hud: HudMeta;
   setHud: (hud: HudMeta) => void;
 }
@@ -49,18 +39,6 @@ export const useStore = create<AppState>((set) => ({
   scrollVelocity: 0,
   setScroll: (progress, velocity) =>
     set({ scrollProgress: progress, scrollVelocity: velocity }),
-
-  activeProject: 0,
-  setActiveProject: (index) => set({ activeProject: index }),
-
-  horizontalGlProgress: 0,
-  horizontalGlY: 0,
-  isHorizontalGalleryActive: false,
-  setHorizontalGlProgress: (progress) =>
-    set({ horizontalGlProgress: progress }),
-  setHorizontalGlY: (y) => set({ horizontalGlY: y }),
-  setHorizontalGalleryActive: (active) =>
-    set({ isHorizontalGalleryActive: active }),
 
   isScrollLocked: false,
   setScrollLocked: (locked) => set({ isScrollLocked: locked }),
