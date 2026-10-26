@@ -5,8 +5,9 @@ import { useReducedMotion } from "framer-motion";
 import RevealFooter from "@/components/ui/RevealFooter";
 import FocusImage from "@/components/webgl/FocusImage";
 import LinerNotes, { Passage } from "@/components/sections/LinerNotes";
-import StickyHeroReveal from "@/components/sections/StickyHeroReveal";
+import FeaturedWorks from "@/components/sections/FeaturedWorks";
 import SwissVideoBlock from "@/components/sections/SwissVideoBlock";
+import Label from "@/components/ui/Label";
 import { useHud } from "@/hooks/useHud";
 
 // Placeholder copy: swap in the studio's own words.
@@ -126,26 +127,14 @@ export default function Home() {
           </button>
         }
       >
-        {/* Section 1: the SOJU type reveal, pinned while the page slides over it */}
-        <StickyHeroReveal
-          title="SOJU"
-          subtitle="Explore our universe"
-          showTrademark={true}
-        />
+        <div className="relative z-10 bg-zinc-950">
+          {/* Section 1: the featured works, filling the first screen */}
+          <section className="min-h-[100dvh] flex flex-col justify-center px-5 md:px-8 pt-[16vh] pb-[8vh]">
+            <Label className="mb-12">Featured Works</Label>
+            <FeaturedWorks />
+          </section>
 
-        <div className="relative z-10 bg-zinc-950 shadow-[0_-20px_50px_rgba(0,0,0,0.3)]">
-          {/* Section 2: the video block */}
-          <div className="w-full px-8 md:px-16 pt-32 relative z-20">
-            <div className="flex justify-between items-end">
-              <p className="text-sm font-bold tracking-[0.2em] uppercase text-zinc-400">
-                Production Capabilities
-              </p>
-              <div className="hidden md:block w-1/3 h-[1px] bg-zinc-800" />
-            </div>
-            <SwissVideoBlock />
-          </div>
-
-          {/* Section 3: liner notes, two viewports of type running into the footer */}
+          {/* Section 2: liner notes, two viewports of type */}
           <section className="min-h-[200vh] flex flex-col justify-between gap-[12vw] px-5 md:px-8 pt-[20vh] pb-[16vh]">
             <div>
               <FocusImage
@@ -158,6 +147,15 @@ export default function Home() {
             </div>
             <LinerNotes passages={PASSAGES.slice(1)} />
           </section>
+
+          {/* Section 3: the video block, leading into the footer */}
+          <div className="w-full px-5 md:px-8 relative z-20">
+            <div className="flex justify-between items-center">
+              <Label>Production Capabilities</Label>
+              <div className="hidden md:block w-1/3 h-[1px] bg-zinc-800" />
+            </div>
+            <SwissVideoBlock />
+          </div>
         </div>
       </RevealFooter>
     </main>
