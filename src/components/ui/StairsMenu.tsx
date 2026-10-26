@@ -6,15 +6,50 @@ import { usePathname } from "next/navigation";
 import { triggerPaperPushTransition } from "@/utils/animations";
 import React, { useEffect } from "react";
 
+// Timeline. Open: the panels rise, then the rules draw in and the type
+// arrives. Close: the rules and type leave first, and the panels drop a beat
+// later, so nothing is left hanging over the page as the lime retracts.
+const EASE_IN_OUT = [0.76, 0, 0.24, 1] as const;
+const PANELS_EXIT_DELAY = 0.2;
+
 const heightAnim: Variants = {
   initial: { height: "0dvh" },
   enter: (i: number) => ({
     height: "100dvh",
-    transition: { duration: 0.5, delay: 0.05 * i, ease: [0.76, 0, 0.24, 1] },
+    transition: { duration: 0.5, delay: 0.05 * i, ease: EASE_IN_OUT },
   }),
   exit: (i: number) => ({
     height: "0dvh",
-    transition: { duration: 0.5, delay: 0.05 * i, ease: [0.76, 0, 0.24, 1] },
+    transition: {
+      duration: 0.45,
+      delay: PANELS_EXIT_DELAY + 0.04 * i,
+      ease: EASE_IN_OUT,
+    },
+  }),
+};
+
+// The index rules draw in from the left and retract to the right
+const lineAnim: Variants = {
+  initial: { scaleX: 0, originX: 0 },
+  enter: (i: number) => ({
+    scaleX: 1,
+    originX: 0,
+    transition: {
+      scaleX: {
+        duration: 0.6,
+        delay: 0.45 + i * 0.06,
+        ease: [0.16, 1, 0.3, 1],
+      },
+      originX: { duration: 0 },
+    },
+  }),
+  exit: (i: number) => ({
+    scaleX: 0,
+    originX: 1,
+    transition: {
+      scaleX: { duration: 0.25, delay: i * 0.03, ease: [0.7, 0, 0.84, 0] },
+      originX: { duration: 0 },
+    },
   }),
 };
 
@@ -25,21 +60,35 @@ const charAnim: Variants = {
     transition: {
       duration: 0.8,
       delay: 0.4 + i * 0.02,
-      ease: [0.76, 0, 0.24, 1],
+      ease: EASE_IN_OUT,
     },
   }),
   exit: (i: number) => ({
     y: "-120%",
     opacity: 0,
-    transition: { duration: 0.3, delay: i * 0.01, ease: [0.76, 0, 0.24, 1] },
+    transition: { duration: 0.3, delay: i * 0.01, ease: EASE_IN_OUT },
   }),
 };
 
 const opacityAnim: Variants = {
   initial: { opacity: 0 },
   enter: { opacity: 1, transition: { duration: 0.5, delay: 0.5 } },
-  exit: { opacity: 0, transition: { duration: 0.3 } },
+  exit: { opacity: 0, transition: { duration: 0.2 } },
 };
+
+function Rule({ index, className }: { index: number; className: string }) {
+  return (
+    <motion.span
+      aria-hidden
+      custom={index}
+      variants={lineAnim}
+      initial="initial"
+      animate="enter"
+      exit="exit"
+      className={`absolute left-0 w-full h-px bg-zinc-900/20 ${className}`}
+    />
+  );
+}
 
 const NAV_LINKS = [
   { title: "Home", href: "/" },
@@ -144,22 +193,30 @@ export default function StairsMenu({
             aria-label="Site menu"
             className="relative z-10 flex-1 flex flex-col justify-center px-5 md:px-8 pointer-events-auto text-zinc-900"
           >
-            <ul className="border-t border-zinc-900/20">
+            <ul className="relative">
+              <Rule index={0} className="top-0" />
               {NAV_LINKS.map((link, linkIndex) => {
                 const staggerOffset = linkIndex * 5;
                 const isCurrent = pathname === link.href;
 
                 return (
-                  <li key={link.title} className="border-b border-zinc-900/20">
+                  <li key={link.title} className="relative">
+                    <Rule index={linkIndex + 1} className="bottom-0" />
                     <a
                       href={link.href}
                       onClick={handleNavigation(link.href)}
                       aria-current={isCurrent ? "page" : undefined}
                       className="group grid grid-cols-12 items-baseline gap-4 py-3 outline-none"
                     >
-                      <span className="col-span-2 md:col-span-1 type-micro opacity-60">
+                      <motion.span
+                        variants={opacityAnim}
+                        initial="initial"
+                        animate="enter"
+                        exit="exit"
+                        className="col-span-2 md:col-span-1 type-micro text-zinc-900/60"
+                      >
                         {String(linkIndex + 1).padStart(2, "0")}
-                      </span>
+                      </motion.span>
                       <span
                         className="col-span-7 md:col-span-9 flex overflow-hidden type-display"
                         // Room for descenders, so a rolled-away letter's tail
@@ -190,9 +247,15 @@ export default function StairsMenu({
                           </motion.span>
                         ))}
                       </span>
-                      <span className="col-span-3 md:col-span-2 type-micro text-right opacity-60">
+                      <motion.span
+                        variants={opacityAnim}
+                        initial="initial"
+                        animate="enter"
+                        exit="exit"
+                        className="col-span-3 md:col-span-2 type-micro text-right text-zinc-900/60"
+                      >
                         {isCurrent ? "Current page" : ""}
-                      </span>
+                      </motion.span>
                     </a>
                   </li>
                 );

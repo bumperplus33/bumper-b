@@ -145,6 +145,56 @@ const PROJECT_DB: Record<string, any> = {
     ],
     challenge:
       "An exclusive, ephemeral digital invitation exploring themes of darkness, luxury, and brutalist typography.",
+    nextProject: { name: "DPSC x Puma", slug: "dpsc-puma" },
+  },
+  // The three featured works below share the placeholder status of the rest
+  // of this data: swap in the real details and copy.
+  "dpsc-puma": {
+    name: "DPSC x Puma",
+    client: "Puma SE",
+    role: "Creative Concept",
+    timeline: "Q3 2022",
+    location: "Global",
+    heroImage: "/images/project-3.jpg",
+    images: [
+      "/images/project-9.jpg",
+      "/images/project-11.jpg",
+      "/images/project-4.jpg",
+    ],
+    challenge:
+      "A creative concept pairing two visual languages in one capsule launch, told through bold colour and motion-led product storytelling.",
+    nextProject: { name: "Grid 7 Years", slug: "grid-7-years" },
+  },
+  "grid-7-years": {
+    name: "Grid 7 Years",
+    client: "Grid",
+    role: "Art Direction",
+    timeline: "Q2 2022",
+    location: "Berlin, DE",
+    heroImage: "/images/project-4.jpg",
+    images: [
+      "/images/project-12.jpg",
+      "/images/project-9.jpg",
+      "/images/project-6.jpg",
+    ],
+    challenge:
+      "An anniversary piece marking seven years of work, set as an archive that rearranges itself on a strict typographic grid.",
+    nextProject: { name: "Music Battle", slug: "puma-music" },
+  },
+  "puma-music": {
+    name: "Music Battle",
+    client: "Puma SE",
+    role: "Direction",
+    timeline: "Q4 2021",
+    location: "Global",
+    heroImage: "/images/project-5.jpg",
+    images: [
+      "/images/project-11.jpg",
+      "/images/project-12.jpg",
+      "/images/project-7.jpg",
+    ],
+    challenge:
+      "A live music battle staged for the screen, directed so the crowd, the sound and the product cut together in real time.",
     nextProject: { name: "Native Instruments", slug: "native-instruments" },
   },
 };
