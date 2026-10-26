@@ -1,9 +1,9 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import { Preload } from "@react-three/drei";
 import { tunnel } from "@/providers/TunnelProvider";
-import type { RefObject } from "react";
+import { useEffect, type RefObject } from "react";
 
 // R3F reads its event source once, when the canvas is created on the client.
 // A ref whose current is the body gives it the right element every time,
@@ -14,6 +14,35 @@ const bodyRef = {
     return typeof document === "undefined" ? null : document.body;
   },
 } as unknown as RefObject<HTMLElement>;
+
+// The canvas renders on demand: scenes ask for frames while they animate.
+// Scrolling and resizing move the DOM boxes the scenes follow, so they ask
+// for a frame too, but only when the page has sent a scene into the canvas.
+function RenderOnScroll() {
+  const scene = useThree((state) => state.scene);
+  const invalidate = useThree((state) => state.invalidate);
+  const size = useThree((state) => state.size);
+
+  // Resizing the canvas clears it, and its new size lands a moment after the
+  // window's resize event, so draw again once the size itself has changed
+  useEffect(() => {
+    invalidate();
+  }, [size, invalidate]);
+
+  useEffect(() => {
+    const requestFrame = () => {
+      if (scene.children.length > 0) invalidate();
+    };
+    window.addEventListener("scroll", requestFrame, { passive: true });
+    window.addEventListener("resize", requestFrame);
+    return () => {
+      window.removeEventListener("scroll", requestFrame);
+      window.removeEventListener("resize", requestFrame);
+    };
+  }, [scene, invalidate]);
+
+  return null;
+}
 
 export default function GlobalCanvas() {
   return (
@@ -31,8 +60,9 @@ export default function GlobalCanvas() {
           alpha: true,
         }}
         camera={{ position: [0, 0, 5], fov: 75 }}
-        frameloop="always"
+        frameloop="demand"
       >
+        <RenderOnScroll />
         <tunnel.Out />
         <Preload all />
       </Canvas>

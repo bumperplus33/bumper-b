@@ -33,7 +33,15 @@ npm run lint
 **What doesn't:**
 - The scenes. Each scene belongs to the page that renders it, so its meshes and materials are created when the page mounts and removed when it unmounts.
 
-The canvas runs with `frameloop="always"`, so it renders every frame even on pages with no WebGL (About).
+The canvas renders on demand (`frameloop="demand"`), so it only draws when something has changed:
+
+- **Scrolling and resizing** request a frame, because they move the DOM boxes the scenes follow. They only do this when a page has sent a scene into the canvas, so About never draws.
+- **Each scene** keeps requesting frames while it animates, and stops once it is still:
+  - `FocusImage`: while its box moves, a dissolve runs or the scroll bend eases out.
+  - `SingletonGlitch`: from hover until the glitch fades.
+- **Resizing the canvas** clears it, so a size change also requests a frame.
+
+With nothing moving, the canvas draws no frames at all. A scene that animates over time must call `invalidate()` from its `useFrame` while it is still changing, and cap `delta`: the first frame after a pause sees the whole pause as its delta.
 
 ### 2. Sending scenes into the canvas (`tunnel-rat`)
 
@@ -158,7 +166,3 @@ Components, packages and assets that no page used were removed in one cleanup co
   - The duplicate `public/assets/fonts` and `public/assets/videos` folders.
   - The six `showcase-reel-1…6.mp4` clips.
   - The unused `assets/images` and parallax images, `project-12.jpg` (the SOJU branding image) and the Next.js starter SVGs.
-
-## Known issues
-
-- **Every-frame rendering:** the canvas renders every frame on every page, including pages with no WebGL.

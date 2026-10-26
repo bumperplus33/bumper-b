@@ -74,13 +74,16 @@ function GlitchMesh({
     for (const t of [loaded].flat()) t.colorSpace = THREE.SRGBColorSpace;
   });
 
+  const invalidate = useThree((state) => state.invalidate);
+
   // Hovering starts a 1.5 second burst; leaving ends it at once. Only the
   // render loop needs this, so it's a timestamp rather than React state.
   const glitchUntil = useRef(0);
 
   useEffect(() => {
     glitchUntil.current = active ? performance.now() + 1500 : 0;
-  }, [active]);
+    invalidate();
+  }, [active, invalidate]);
 
   const uniforms = useMemo(() => {
     // Grab the intrinsic width/height of the actual image file
@@ -116,6 +119,10 @@ function GlitchMesh({
     } else {
       meshRef.current.visible = true;
     }
+
+    // The canvas renders on demand: keep frames coming until the glitch has
+    // faded out
+    invalidate();
 
     const rect = domRef.current.getBoundingClientRect();
     const width = (rect.width / size.width) * viewport.width;

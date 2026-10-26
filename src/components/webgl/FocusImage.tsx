@@ -105,7 +105,7 @@ function FocusMesh({
     }
   });
   const reduceMotion = useReducedMotion();
-  const { size, viewport } = useThree();
+  const { size, viewport, invalidate } = useThree();
 
   // Initial values only: from here on the uniforms change through the
   // material, never through this object
@@ -125,6 +125,14 @@ function FocusMesh({
   useEffect(() => {
     onReady();
   }, [onReady]);
+
+  // Where the box was last frame, to tell whether it is still moving
+  const lastRect = useRef({ left: NaN, top: NaN, width: NaN, height: NaN });
+
+  // A new picture needs frames for its dissolve
+  useEffect(() => {
+    invalidate();
+  }, [index, invalidate]);
 
   useFrame((_, delta) => {
     const dom = domRef.current;
@@ -147,15 +155,38 @@ function FocusMesh({
       uniforms.uProgress.value = reduceMotion ? 1 : 0;
     }
 
-    // Ease the dissolve and the scroll velocity toward their targets
+    // Ease the dissolve and the scroll velocity toward their targets. The
+    // canvas renders on demand, so the first frame after a pause sees the
+    // whole pause as its delta; cap it so the dissolve still plays out.
+    const step = Math.min(delta, 1 / 30);
     uniforms.uProgress.value = Math.min(
-      uniforms.uProgress.value + delta * 1.4,
+      uniforms.uProgress.value + step * 1.4,
       1,
     );
     const velocity = reduceMotion
       ? 0
       : THREE.MathUtils.clamp(useStore.getState().scrollVelocity / 40, -1, 1);
     uniforms.uVelocity.value += (velocity - uniforms.uVelocity.value) * 0.1;
+
+    // Keep rendering while the box moves, the dissolve runs or the scroll
+    // bend eases out; once everything is still, stop until something asks
+    const last = lastRect.current;
+    const moved =
+      rect.left !== last.left ||
+      rect.top !== last.top ||
+      rect.width !== last.width ||
+      rect.height !== last.height;
+    lastRect.current = {
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height: rect.height,
+    };
+    const animating =
+      uniforms.uProgress.value < 1 ||
+      Math.abs(uniforms.uVelocity.value) > 0.001 ||
+      velocity !== 0;
+    if (moved || animating) invalidate();
 
     // DOM-to-canvas sync: match the plane to the box on screen
     const width = (rect.width / size.width) * viewport.width;
