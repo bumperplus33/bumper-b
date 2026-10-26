@@ -64,10 +64,10 @@ A Zustand store holds what several components need:
 | State | Set by | Read by |
 | --- | --- | --- |
 | `isLoading` | `Preloader` | `Preloader`, `ClunkyReveal` (hero title reveal) |
-| `scrollProgress`, `scrollVelocity` | `SmoothScrollProvider`, on every Lenis scroll | `FocusImage`, inside its render loop via `getState()`, so scrolling doesn't re-render React |
+| `scrollVelocity` | `SmoothScrollProvider`, on every Lenis scroll | `FocusImage`, inside its render loop via `getState()`, so scrolling doesn't re-render React |
+| `scrollProgress` | `SmoothScrollProvider`, on every Lenis scroll | nothing yet; available for scroll-driven effects |
 | `hud` | pages, through `useHud()` | `NavBar` (the metadata in the top-right corner) |
 | `isScrollLocked` | **nothing yet** | `SmoothScrollProvider` |
-| `horizontalGl*`, `activeProject`, `isHorizontalGalleryActive` | `HorizontalGLParallaxBlock` | that block and its scene; neither is on a page |
 
 ### 5. Scrolling (`src/providers/SmoothScrollProvider.tsx`)
 
@@ -142,26 +142,29 @@ The full-screen counter waits for the WebGL textures (drei's `useProgress`) and 
 
 But no route uses them, and nothing locks or unlocks scrolling per route. The earlier "DOM Sandwich" and `/archive` design described this; it isn't implemented.
 
-## Unused code
+## Removed code
 
-These are in the repo but no page uses them:
+Components, packages and assets that no page used were removed in one cleanup commit. They can be restored from git history if needed:
 
-- **Sections:**
-  - `HorizontalGLParallaxBlock` and its scene `HorizontalGLParallaxScene`
-  - `InfiniteParallaxHero`
-  - `ProjectShowcase`
-  - `WorksIndex`: a typographic project list with a `FocusImage` beside it
-- **WebGL:** `WebGLScene`, `FluidWatermark`
-- **UI:** `GlitchImage`
-- **Motion:** `MagneticWrapper`, `HardwareParallax`, `KineticTypography`, `ParallaxImage`, `VelocityMarquee`
-- **Packages:**
-  - `gsap`: only `WebGLScene` imports it.
-  - `@vimeo/player`: nothing imports it.
+- **Components:**
+  - `HorizontalGLParallaxBlock` and `HorizontalGLParallaxScene`: a horizontal WebGL gallery.
+  - `InfiniteParallaxHero`, `ProjectShowcase`.
+  - `WorksIndex`: a typographic project list with a `FocusImage` beside it.
+  - `WebGLScene`, `FluidWatermark`, `GlitchImage`.
+  - `MagneticWrapper`, `HardwareParallax`, `KineticTypography`, `ParallaxImage`, `VelocityMarquee`.
+  - `src/utils/math.ts`.
+- **Packages:** `gsap`, `@vimeo/player`, `@types/vimeo__player`.
 - **Assets:**
-  - `public/assets/fonts` and `public/assets/videos` duplicate `public/fonts` and `public/videos`; only `public/assets/images` is referenced.
-  - `public/videos/showcase-reel-1…6.mp4` are only used by `InfiniteParallaxHero`.
+  - The duplicate `public/assets/fonts` and `public/assets/videos` folders.
+  - The six `showcase-reel-1…6.mp4` clips.
+  - The unused `assets/images` and parallax images, `project-12.jpg` (the SOJU branding image) and the Next.js starter SVGs.
 
 ## Known issues
 
-- **Lint:** `npm run lint` reports 18 problems (10 errors, 8 warnings), all in older files: `any` types, `setState` inside effects, and mutating hook values that the React Compiler rules flag. `next build` does not run ESLint, so it still passes.
+- **Lint:** `npm run lint` reports 7 problems (4 errors, 3 warnings), all in older code. `next build` does not run ESLint, so it still passes.
+  - Errors:
+    - An `any` type in `PROJECT_DB`.
+    - Two `setState` calls inside effects (`StickyHeroReveal`, `GlobalCanvas`).
+    - One mutated hook value (`SingletonGlitch`).
+  - Warnings: three plain `<img>` tags in `FeaturedWorks`.
 - **Every-frame rendering:** the canvas renders every frame on every page, including pages with no WebGL.

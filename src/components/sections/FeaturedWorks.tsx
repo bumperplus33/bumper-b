@@ -50,36 +50,6 @@ const FEATURED = [
   },
 ];
 
-const pageAnimation = () => {
-  document.documentElement.animate(
-    [
-      { scale: 1, transform: "translateY(0%)", rotate: "0deg", opacity: 1 },
-      {
-        scale: 1.2,
-        transform: "translateY(-10%)",
-        rotate: "-5deg",
-        opacity: 0,
-      },
-    ],
-    {
-      duration: 800,
-      easing: "cubic-bezier(0.9, 0, 0.1, 1)",
-      fill: "forwards",
-      pseudoElement: "::view-transition-old(root)",
-    },
-  );
-
-  document.documentElement.animate(
-    [{ transform: "translateY(100%)" }, { transform: "translateY(0%)" }],
-    {
-      duration: 800,
-      easing: "cubic-bezier(0.9, 0, 0.1, 1)",
-      fill: "forwards",
-      pseudoElement: "::view-transition-new(root)",
-    },
-  );
-};
-
 const clipVariants = {
   hiddenBottom: { clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)" },
   visible: { clipPath: "polygon(0% 100%, 100% 100%, 100% 0%, 0% 0%)" },
