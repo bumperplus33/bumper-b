@@ -8,7 +8,6 @@ import { triggerPaperPushTransition } from "@/utils/animations";
 import RevealFooter from "@/components/ui/RevealFooter";
 import StickyHeroReveal from "@/components/sections/StickyHeroReveal";
 import SingletonGlitch from "@/components/webgl/SingletonGlitch";
-import FeaturedWorks from "@/components/sections/FeaturedWorks";
 import { PROJECTS } from "@/data/projects";
 import Label from "@/components/ui/Label";
 import { useHud } from "@/hooks/useHud";
@@ -47,11 +46,6 @@ export default function WorkGallery() {
               ${isCinematicMode ? "bg-zinc-100/40 dark:bg-zinc-950/40 backdrop-blur-sm" : "bg-zinc-100 dark:bg-zinc-950"}
             `}
           >
-            <div className="px-5 md:px-8 mb-32 relative z-20">
-              <Label className="mb-12">Featured Works</Label>
-              <FeaturedWorks />
-            </div>
-
             <div className="px-5 md:px-8">
               <Label className="mb-12">Project Archive</Label>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-16 md:gap-x-8 md:gap-y-24">
