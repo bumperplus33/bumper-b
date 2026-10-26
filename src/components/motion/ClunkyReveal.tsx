@@ -1,7 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { useStore } from "@/store/useStore";
+
+// A backstop: if the preloader hasn't signalled by now (it caps itself at
+// 3s), reveal anyway rather than leave the title hidden
+const FALLBACK_REVEAL_MS = 6000;
 
 interface ClunkyRevealProps {
   text: string;
@@ -9,7 +14,15 @@ interface ClunkyRevealProps {
 }
 
 export default function ClunkyReveal({ text, delay = 0 }: ClunkyRevealProps) {
-  const { isLoading } = useStore();
+  const isLoading = useStore((state) => state.isLoading);
+  const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setTimedOut(true), FALLBACK_REVEAL_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const shouldReveal = !isLoading || timedOut;
   const words = text.split(" ");
 
   const containerVariants: Variants = {
@@ -49,7 +62,7 @@ export default function ClunkyReveal({ text, delay = 0 }: ClunkyRevealProps) {
     <motion.div
       variants={containerVariants}
       initial="hidden"
-      animate={isLoading ? "hidden" : "visible"}
+      animate={shouldReveal ? "visible" : "hidden"}
       className="flex whitespace-nowrap tracking-tighter uppercase font-neue font-bold"
     >
       {words.map((word, wordIndex) => (

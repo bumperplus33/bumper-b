@@ -1,41 +1,78 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useStore } from "@/store/useStore";
 import { useProgress } from "@react-three/drei";
 
+// The preloader waits for the WebGL textures and the fonts, but never longer
+// than this. Most textures are only for hover effects, and on a slow
+// connection they can take tens of seconds; the page and its title reveal
+// shouldn't wait on them.
+const MAX_WAIT_MS = 3000;
 
 export default function Preloader() {
-  const { isLoading, setIsLoading } = useStore();
+  const isLoading = useStore((state) => state.isLoading);
+  const setIsLoading = useStore((state) => state.setIsLoading);
   const [displayProgress, setDisplayProgress] = useState(0);
   const [isCompletelyHidden, setIsCompletelyHidden] = useState(false);
 
   const { progress: r3fProgress, active: r3fActive } = useProgress();
 
+  // The loop below runs once for the preloader's whole life and reads the
+  // latest loading state from these refs, so the counter never restarts
+  const r3fRef = useRef({ progress: r3fProgress, active: r3fActive });
+  const fontsReadyRef = useRef(false);
+
   useEffect(() => {
-    let currentProgress = 0;
-    let animationFrameId: number;
+    r3fRef.current = { progress: r3fProgress, active: r3fActive };
+  }, [r3fProgress, r3fActive]);
 
-    const updateProgress = () => {
-      const targetProgress = r3fActive ? r3fProgress : 100;
-      currentProgress += (targetProgress - currentProgress) * 0.1;
-      currentProgress += Math.random() * 0.5;
+  useEffect(() => {
+    let cancelled = false;
+    document.fonts?.ready.then(() => {
+      if (!cancelled) fontsReadyRef.current = true;
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-      if (currentProgress >= 99.5) {
+  useEffect(() => {
+    const start = performance.now();
+    let current = 0;
+    let frame = 0;
+    let doneTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const tick = () => {
+      const timedOut = performance.now() - start > MAX_WAIT_MS;
+      const { progress, active } = r3fRef.current;
+      let target = timedOut || !active ? 100 : progress;
+      // Hold short of 100 until the fonts are in, so the title doesn't
+      // animate in a fallback face
+      if (!timedOut && !fontsReadyRef.current) target = Math.min(target, 90);
+
+      // Ease toward the target, but only ever count up
+      current = Math.max(
+        current,
+        Math.min(current + (target - current) * 0.1 + Math.random() * 0.5, 100),
+      );
+
+      if (current >= 99.5) {
         setDisplayProgress(100);
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 400);
-      } else {
-        setDisplayProgress(Math.min(Math.round(currentProgress), 99));
-        animationFrameId = requestAnimationFrame(updateProgress);
+        doneTimer = setTimeout(() => setIsLoading(false), 400);
+        return;
       }
+      setDisplayProgress(Math.min(Math.round(current), 99));
+      frame = requestAnimationFrame(tick);
     };
 
-    animationFrameId = requestAnimationFrame(updateProgress);
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [r3fProgress, r3fActive, setIsLoading]);
+    frame = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(doneTimer);
+    };
+  }, [setIsLoading]);
 
   if (isCompletelyHidden) return null;
 
