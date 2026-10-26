@@ -6,6 +6,7 @@ import RevealFooter from "@/components/ui/RevealFooter";
 import FocusImage from "@/components/webgl/FocusImage";
 import LinerNotes, { Passage } from "@/components/sections/LinerNotes";
 import FeaturedWorks from "@/components/sections/FeaturedWorks";
+import LiquidHero from "@/components/sections/LiquidHero";
 import SwissVideoBlock from "@/components/sections/SwissVideoBlock";
 import Label from "@/components/ui/Label";
 import { useHud } from "@/hooks/useHud";
@@ -128,6 +129,9 @@ export default function Home() {
         }
       >
         <div className="relative z-10 bg-zinc-950">
+          {/* Hero: the wordmark over a liquid WebGL blob */}
+          <LiquidHero />
+
           {/* Section 1: the featured works, filling the first screen */}
           <section className="min-h-[100dvh] flex flex-col justify-center px-5 md:px-8 pt-[16vh] pb-[8vh]">
             <Label className="mb-12">Featured Works</Label>

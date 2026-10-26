@@ -86,7 +86,7 @@ export const PROJECTS: Project[] = [
   {
     name: "Grid 7 Years",
     location: "Berlin / 2022",
-    src: "/images/project-10.jpg",
+    src: "/images/project-12.jpg",
     slug: "grid-7-years",
     role: "Art Direction",
     id: "10",

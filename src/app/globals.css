@@ -72,6 +72,14 @@ body {
   }
 }
 
+/* LinerNotes renders the same markup on the server and the client and lets
+   this rule handle reduced motion, so hydration never sees a mismatch */
+@media (prefers-reduced-motion: reduce) {
+  .liner-word {
+    opacity: 1 !important;
+  }
+}
+
 body {
   /* Prevents the trackpad from navigating back/forward on horizontal swipes */
   overscroll-behavior-x: none;
