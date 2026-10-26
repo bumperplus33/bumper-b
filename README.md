@@ -144,8 +144,17 @@ The full-screen counter waits for the WebGL textures (drei's `useProgress`) and 
 | Project page details | `PROJECT_DB` in `src/app/work/[slug]/page.tsx` | An unknown slug falls back to Native Instruments |
 | Featured Works list | `FEATURED` in `src/components/sections/FeaturedWorks.tsx` | |
 | Home and About copy | in each page file | |
+| Images | `public/images/project-*.jpg`, `video-poster.jpg`, `public/assets/images/image_*.webp` | See below |
 
-**All copy and project details are placeholder.**
+**All copy, project details and images are placeholder.**
+
+**Placeholder images:**
+- Every image on the site is a variation of one black-and-white photo, made by `scripts/placeholder-variations.py`.
+- Each variation is a crop with its own tone treatment (contrast, matte, low key, high key), sometimes mirrored, plus fine grain.
+- The script writes them under the file names the code already uses, so real images can replace them one file at a time.
+- To regenerate: `python3 scripts/placeholder-variations.py SOURCE OUT_DIR` (needs Pillow), then copy the output over `public/images` and `public/assets/images`.
+- The crops are tuned to the current 560×322 source; a different photo needs new crops.
+- In development, clear `.next/cache/images` after replacing an image, or `next/image` keeps serving the old one.
 
 ## Not built yet
 
@@ -170,4 +179,4 @@ Components, packages and assets that no page used were removed in one cleanup co
 - **Assets:**
   - The duplicate `public/assets/fonts` and `public/assets/videos` folders.
   - The six `showcase-reel-1…6.mp4` clips.
-  - The unused `assets/images` and parallax images, `project-12.jpg` (the SOJU branding image) and the Next.js starter SVGs.
+  - The unused `assets/images` and parallax images, the old `project-12.jpg` (the SOJU branding image) and the Next.js starter SVGs. `project-12.jpg` now holds a placeholder crop for Grid 7 Years.
