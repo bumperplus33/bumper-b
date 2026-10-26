@@ -49,6 +49,7 @@ With nothing moving, the canvas draws no frames at all. A scene that animates ov
 `src/providers/TunnelProvider.ts` exports one tunnel. A component anywhere in the page renders its scene inside `<tunnel.In>`, and the canvas renders everything that arrives at `<tunnel.Out />`. Page code can own its WebGL without the canvas knowing about it.
 
 In use:
+- `SequencerScene`: the Sequencer route's full-screen card loop (see below).
 - `LiquidTitle`: Home's hero (`LiquidHero`).
   - A milky metaball blob with drifting holes, plus a smaller blob that follows the pointer and swells while pressed.
   - The wordmark inverts where it crosses the blob, and melts and slices near its edges and with scroll speed.
@@ -80,13 +81,13 @@ A Zustand store holds what several components need:
 | `scrollVelocity` | `SmoothScrollProvider`, on every Lenis scroll | `FocusImage`, inside its render loop via `getState()`, so scrolling doesn't re-render React |
 | `scrollProgress` | `SmoothScrollProvider`, on every Lenis scroll | nothing yet; available for scroll-driven effects |
 | `hud` | pages, through `useHud()` | `NavBar` (the metadata in the top-right corner) |
-| `isScrollLocked` | **nothing yet** | `SmoothScrollProvider` |
+| `isScrollLocked` | the Sequencer route, while it's mounted | `SmoothScrollProvider`, `NavBar` (never hides the HUD while locked) |
 
 ### 5. Scrolling (`src/providers/SmoothScrollProvider.tsx`)
 
 - **Smooth scroll:** Lenis runs on every page and publishes progress and velocity to the store.
 - **Route changes:** scroll jumps to the top through Lenis (`immediate`), so Lenis's own position stays in sync.
-- **Scroll lock:** when `isScrollLocked` is true, Lenis stops and the body gets `overflow: hidden`. The lock works, but no page turns it on yet (see *Not built yet*).
+- **Scroll lock:** when `isScrollLocked` is true, Lenis stops and the body gets `overflow: hidden`. The Sequencer route turns it on while it's mounted and off when you leave, so every other page scrolls normally.
 
 ### 6. Preloader (`src/components/ui/Preloader.tsx`)
 
@@ -102,6 +103,7 @@ The full-screen counter waits for the WebGL textures (drei's `useProgress`) and 
 | `/` | `src/app/page.tsx` | Liquid hero (`LiquidHero`) → Featured Works list → liner-notes text with a `FocusImage` (two viewports tall) → video block → footer |
 | `/work` | `src/app/work/page.tsx` | ARCHIVE title reveal → project archive grid (hover glitch via `SingletonGlitch`) → footer |
 | `/work/[slug]` | `src/app/work/[slug]/page.tsx` | Title, metadata row, hero image, the challenge as a liner-notes passage, gallery, Next Project link → footer |
+| `/sequencer` | `src/app/sequencer/page.tsx` | Immersive, scroll-locked project browser (see below) |
 | `/about` | `src/app/about/page.tsx` | ABOUT title reveal → studio statement → capabilities index → image → footer |
 
 **Shared on every page** (`src/app/layout.tsx`):
@@ -156,13 +158,28 @@ The full-screen counter waits for the WebGL textures (drei's `useProgress`) and 
 - The crops are tuned to the current 560×322 source; a different photo needs new crops.
 - In development, clear `.next/cache/images` after replacing an image, or `next/image` keeps serving the old one.
 
-## Not built yet
+## The Sequencer (`/sequencer`)
 
-**An immersive, scroll-locked WebGL route.** A route where the canvas takes over the layout and handles its own input, with HTML only as framing. The pieces it would use exist:
-- The scroll lock in the store and `SmoothScrollProvider`.
-- The tunnel.
+The one immersive route: the page doesn't scroll, and the WebGL canvas lays out the whole page itself.
 
-But no route uses them, and nothing locks or unlocks scrolling per route. The earlier "DOM Sandwich" and `/archive` design described this; it isn't implemented.
+- **Scene** (`src/components/webgl/SequencerScene.tsx`):
+  - Every project is a card in an endless loop.
+  - The centre card is large and in colour; the others shrink and dim.
+  - While moving, the cards bow against the motion and split their colour channels.
+  - The page sets a target position (in cards) on a shared ref, and the scene eases toward it, drawing frames only until it settles.
+- **Input** (`src/app/sequencer/page.tsx`):
+  - **Wheel and trackpad:** move freely, then snap to a card; a short flick still moves one card.
+  - **Drag (mouse, pen or touch):** follows the pointer, with a flick on release.
+  - **Arrow keys** move one card.
+  - **Step buttons:** one per project, taking the shortest way round the loop.
+  - **Opening a project:** click or tap the centre card, press Enter, or use "Open project".
+- **HTML frame:**
+  - The HUD shows the active project's details.
+  - The bottom bar shows its number, name, role and location, the steps and the open link.
+  - The page has an `sr-only` heading and a live region announcing each project.
+  - A click zone sized like the centre card holds the DOM image, shown until the textures load and as the fallback without WebGL.
+- **Scroll lock:** set when the route mounts and cleared when it unmounts.
+- **Reduced motion:** cards jump straight to the target, without the bend or colour split.
 
 ## Removed code
 
