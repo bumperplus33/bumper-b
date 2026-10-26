@@ -173,7 +173,7 @@ const PROJECT_DB: Record<string, any> = {
     location: "Berlin, DE",
     heroImage: "/images/project-4.jpg",
     images: [
-      "/images/project-12.jpg",
+      "/images/project-10.jpg",
       "/images/project-9.jpg",
       "/images/project-6.jpg",
     ],
