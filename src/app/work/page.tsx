@@ -1,88 +1,24 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { useTransitionRouter } from "next-view-transitions";
 import { triggerPaperPushTransition } from "@/utils/animations";
 
-import Navbar from "@/components/ui/NavBar";
-import Footer from "@/components/ui/Footer";
-import FilmGrain from "@/components/ui/FilmGrain";
+import RevealFooter from "@/components/ui/RevealFooter";
 import StickyHeroReveal from "@/components/sections/StickyHeroReveal";
 import SingletonGlitch from "@/components/webgl/SingletonGlitch";
 import FeaturedWorks from "@/components/sections/FeaturedWorks";
-
-const PROJECTS = [
-  {
-    name: "Native Instruments",
-    location: "Berlin / 2023",
-    src: "/images/project-1.jpg",
-    slug: "native-instruments",
-    role: "Lead Agency",
-    id: "01",
-  },
-  {
-    name: "Oura",
-    location: "Oulu / 2023",
-    src: "/images/project-2.jpg",
-    slug: "oura",
-    role: "Digital Partner",
-    id: "02",
-  },
-  {
-    name: "Hender Scheme",
-    location: "Tokyo / 2023",
-    src: "/images/project-3.jpg",
-    slug: "hender-scheme",
-    role: "Creative Direction",
-    id: "03",
-  },
-  {
-    name: "B&O Play",
-    location: "Struer / 2022",
-    src: "/images/project-4.jpg",
-    slug: "bo-play",
-    role: "Interactive Design",
-    id: "04",
-  },
-  {
-    name: "Nothing",
-    location: "London / 2022",
-    src: "/images/project-5.jpg",
-    slug: "nothing",
-    role: "Technical Partner",
-    id: "05",
-  },
-  {
-    name: "Gentle Monster",
-    location: "Seoul / 2022",
-    src: "/images/project-6.jpg",
-    slug: "gentle-monster",
-    role: "Lead Agency",
-    id: "06",
-  },
-  {
-    name: "Puma POV",
-    location: "Global / 2021",
-    src: "/images/project-7.jpg",
-    slug: "puma-pov",
-    role: "Creative Design",
-    id: "07",
-  },
-  {
-    name: "Jaarvis Noir",
-    location: "Paris / 2021",
-    src: "/images/project-8.jpg",
-    slug: "jaarvis",
-    role: "Event",
-    id: "08",
-  },
-];
+import { PROJECTS } from "@/data/projects";
+import Label from "@/components/ui/Label";
+import { useHud } from "@/hooks/useHud";
 
 export default function WorkGallery() {
-  const [footerHeight, setFooterHeight] = useState(0);
-  const footerRef = useRef<HTMLDivElement>(null);
-
+  useHud("Archive", [
+    "Selected works",
+    `${PROJECTS.length} projects`,
+    "2021—2023",
+  ]);
   const router = useTransitionRouter();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -93,30 +29,12 @@ export default function WorkGallery() {
     });
   };
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  useEffect(() => {
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (let entry of entries) setFooterHeight(entry.contentRect.height);
-    });
-    if (footerRef.current) resizeObserver.observe(footerRef.current);
-    return () => resizeObserver.disconnect();
-  }, []);
-
   const isCinematicMode = hoveredIndex !== null;
 
   return (
     <>
-      <FilmGrain />
       <main className="relative min-h-screen text-zinc-900 dark:text-zinc-100 overflow-clip">
-        <Navbar />
-
-        <div
-          className="relative z-10"
-          style={{ marginBottom: `${footerHeight}px` }}
-        >
+        <RevealFooter>
           {/* THE FIX: Reverted back to "ARCHIVE" */}
           <StickyHeroReveal
             title="ARCHIVE"
@@ -129,17 +47,13 @@ export default function WorkGallery() {
               ${isCinematicMode ? "bg-zinc-100/40 dark:bg-zinc-950/40 backdrop-blur-sm" : "bg-zinc-100 dark:bg-zinc-950"}
             `}
           >
-            <div className="px-6 md:px-12 max-w-[1800px] mx-auto mb-32 relative z-20">
-              <p className="mb-12 text-sm font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400">
-                Featured Works
-              </p>
+            <div className="px-5 md:px-8 mb-32 relative z-20">
+              <Label className="mb-12">Featured Works</Label>
               <FeaturedWorks />
             </div>
 
-            <div className="px-6 md:px-12 max-w-[1800px] mx-auto">
-              <p className="mb-12 text-sm font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400">
-                Project Archive
-              </p>
+            <div className="px-5 md:px-8">
+              <Label className="mb-12">Project Archive</Label>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-16 md:gap-x-8 md:gap-y-24">
                 {PROJECTS.map((project, index) => {
                   const isHovered = hoveredIndex === index;
@@ -174,16 +88,12 @@ export default function WorkGallery() {
                           />
                         </div>
 
-                        <div className="flex justify-between items-start border-t border-zinc-200 dark:border-zinc-800 pt-3">
-                          <div className="flex flex-col gap-1">
-                            <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-zinc-400">
-                              Index — {project.id}
-                            </span>
-                            <h2 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-                              {project.name}
-                            </h2>
-                          </div>
-                          <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-zinc-400 text-right mt-[18px]">
+                        <div className="flex justify-between items-baseline gap-4 border-t border-zinc-200 dark:border-zinc-800 pt-3 type-micro">
+                          <h2 className="flex gap-4 text-zinc-900 dark:text-zinc-100">
+                            <span className="text-zinc-500">{project.id}</span>
+                            {project.name}
+                          </h2>
+                          <span className="text-zinc-400 text-right">
                             {project.role}
                           </span>
                         </div>
@@ -194,16 +104,7 @@ export default function WorkGallery() {
               </div>
             </div>
           </div>
-        </div>
-
-        <div
-          ref={footerRef}
-          className="fixed bottom-0 left-0 w-full z-0 pointer-events-none"
-        >
-          <div className="pointer-events-auto">
-            <Footer />
-          </div>
-        </div>
+        </RevealFooter>
       </main>
     </>
   );

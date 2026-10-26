@@ -5,12 +5,23 @@ import { ViewTransitions } from "next-view-transitions";
 import localFont from "next/font/local";
 
 import Preloader from "@/components/ui/Preloader";
-// 1. THE FIX: Re-import your GlobalCanvas
+import NavBar from "@/components/ui/NavBar";
+import FilmGrain from "@/components/ui/FilmGrain";
 import GlobalCanvas from "@/components/webgl/GlobalCanvas";
 
+// The only place fonts are loaded. globals.css maps these variables to the
+// font-neue and font-sans utilities.
 const neueMontreal = localFont({
   src: "../../public/fonts/PPNeueMontreal-Bold.otf",
-  variable: "--font-neue",
+  weight: "700",
+  variable: "--font-neue-montreal",
+  display: "swap",
+});
+
+const nbInternational = localFont({
+  src: "../../public/fonts/NBInternational-Regular.woff2",
+  weight: "400",
+  variable: "--font-nb",
   display: "swap",
 });
 
@@ -27,14 +38,20 @@ export default function RootLayout({
 }) {
   return (
     <ViewTransitions>
-      <html lang="en" className="dark">
-        <body
-          className={`bg-zinc-950 text-zinc-100 antialiased selection:bg-[#CCFF00] selection:text-zinc-950 ${neueMontreal.variable}`}
-        >
+      {/* The font variables go on <html> because the theme reads them at :root */}
+      <html
+        lang="en"
+        className={`dark ${neueMontreal.variable} ${nbInternational.variable}`}
+      >
+        <body className="bg-zinc-950 text-zinc-100 antialiased selection:bg-accent selection:text-zinc-950">
           <Preloader />
 
-          {/* 2. THE FIX: Put the GlobalCanvas back in the DOM so your glitch meshes have a destination! */}
+          {/* The singleton canvas: page scenes teleport into it through tunnel.In */}
           <GlobalCanvas />
+
+          {/* Shared chrome lives here so it survives route changes */}
+          <NavBar />
+          <FilmGrain />
 
           <SmoothScrollProvider>{children}</SmoothScrollProvider>
         </body>

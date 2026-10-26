@@ -1,9 +1,8 @@
 "use client";
 
-import { motion, useTransform, useMotionValue } from "framer-motion";
+import { motion, useTransform, useScroll } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useStore } from "@/store/useStore";
 import ClunkyReveal from "@/components/motion/ClunkyReveal";
 
 interface StickyHeroRevealProps {
@@ -20,12 +19,12 @@ export default function StickyHeroReveal({
   const pathname = usePathname();
   const [isReady, setIsReady] = useState(false);
 
-  const scrollProgress = useStore((state) => state.scrollProgress);
-  const motionScroll = useMotionValue(scrollProgress);
-
-  useEffect(() => {
-    motionScroll.set(scrollProgress);
-  }, [scrollProgress, motionScroll]);
+  // Progress through the first screen: 0 at the top, 1 once the content
+  // layer has slid fully over the hero.
+  const { scrollY } = useScroll();
+  const motionScroll = useTransform(scrollY, (y) =>
+    typeof window === "undefined" ? 0 : Math.min(y / window.innerHeight, 1),
+  );
 
   useEffect(() => {
     setIsReady(false);

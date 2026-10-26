@@ -5,9 +5,10 @@ interface AppState {
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
 
-  // 2. LENIS SCROLL STATE
+  // 2. LENIS SCROLL STATE (published by SmoothScrollProvider on every scroll)
   scrollProgress: number;
-  setScrollProgress: (progress: number) => void;
+  scrollVelocity: number;
+  setScroll: (progress: number, velocity: number) => void;
 
   // 3. GLOBAL PROJECT TRACKING
   activeProject: number;
@@ -24,14 +25,30 @@ interface AppState {
   // 5. BROWSER PIPELINE STATE
   isScrollLocked: boolean;
   setScrollLocked: (locked: boolean) => void;
+
+  // 6. HUD: the metadata block in the top-right corner, set per page
+  hud: HudMeta;
+  setHud: (hud: HudMeta) => void;
 }
+
+export interface HudMeta {
+  title: string;
+  lines: string[];
+}
+
+export const DEFAULT_HUD: HudMeta = {
+  title: "SOJU Studio",
+  lines: ["Digital creative studio", "Technology / Art", "Index 2021—2026"],
+};
 
 export const useStore = create<AppState>((set) => ({
   isLoading: true,
   setIsLoading: (loading) => set({ isLoading: loading }),
 
   scrollProgress: 0,
-  setScrollProgress: (progress) => set({ scrollProgress: progress }),
+  scrollVelocity: 0,
+  setScroll: (progress, velocity) =>
+    set({ scrollProgress: progress, scrollVelocity: velocity }),
 
   activeProject: 0,
   setActiveProject: (index) => set({ activeProject: index }),
@@ -47,4 +64,7 @@ export const useStore = create<AppState>((set) => ({
 
   isScrollLocked: false,
   setScrollLocked: (locked) => set({ isScrollLocked: locked }),
+
+  hud: DEFAULT_HUD,
+  setHud: (hud) => set({ hud }),
 }));

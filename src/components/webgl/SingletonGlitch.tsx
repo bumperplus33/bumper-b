@@ -97,8 +97,9 @@ function GlitchMesh({
 
   const uniforms = useMemo(() => {
     // Grab the intrinsic width/height of the actual image file
-    const imgRes = texture?.image
-      ? new THREE.Vector2(texture.image.width, texture.image.height)
+    const image = texture?.image as HTMLImageElement | undefined;
+    const imgRes = image
+      ? new THREE.Vector2(image.width, image.height)
       : new THREE.Vector2(1, 1);
 
     return {

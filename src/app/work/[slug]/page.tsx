@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, use } from "react";
+import { useRef, use } from "react";
 import Image from "next/image";
 import {
   motion,
@@ -12,9 +12,10 @@ import {
 import { useTransitionRouter } from "next-view-transitions";
 import { triggerPaperPushTransition } from "@/utils/animations";
 
-import Navbar from "@/components/ui/NavBar";
-import Footer from "@/components/ui/Footer";
-import FilmGrain from "@/components/ui/FilmGrain";
+import RevealFooter from "@/components/ui/RevealFooter";
+import LinerNotes from "@/components/sections/LinerNotes";
+import Label from "@/components/ui/Label";
+import { useHud } from "@/hooks/useHud";
 
 // FULLY MAPPED SEQUENCE
 const PROJECT_DB: Record<string, any> = {
@@ -194,13 +195,15 @@ export default function CaseStudy({
   const router = useTransitionRouter();
   const { scrollYProgress } = useScroll();
 
-  const [footerHeight, setFooterHeight] = useState(0);
-  const footerRef = useRef<HTMLDivElement>(null);
-
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
 
   const project = PROJECT_DB[slug] || PROJECT_DB["native-instruments"];
+  useHud(project.name, [
+    `Client: ${project.client}`,
+    `Role: ${project.role}`,
+    `${project.location} / ${project.timeline}`,
+  ]);
 
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
@@ -227,18 +230,6 @@ export default function CaseStudy({
     cursorY.set(e.clientY - rect.top);
   };
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  useEffect(() => {
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (let entry of entries) setFooterHeight(entry.contentRect.height);
-    });
-    if (footerRef.current) resizeObserver.observe(footerRef.current);
-    return () => resizeObserver.disconnect();
-  }, []);
-
   const handleNavigation = (e: React.MouseEvent, targetSlug: string) => {
     e.preventDefault();
     if (typeof triggerPaperPushTransition === "function")
@@ -253,15 +244,9 @@ export default function CaseStudy({
 
   return (
     <>
-      <FilmGrain />
       <main className="relative bg-zinc-100 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-100 overflow-clip selection:bg-[#CCFF00] selection:text-zinc-900 transition-colors duration-500">
-        <Navbar />
-
-        <div
-          className="relative z-10 bg-zinc-100 dark:bg-zinc-950 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] transition-colors duration-500"
-          style={{ marginBottom: `${footerHeight}px` }}
-        >
-          <section className="pt-40 md:pt-56 px-6 md:px-12 max-w-[1800px] mx-auto relative z-10">
+        <RevealFooter className="bg-zinc-100 dark:bg-zinc-950 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] transition-colors duration-500">
+          <section className="pt-40 md:pt-56 px-5 md:px-8 relative z-10">
             <div className="overflow-hidden py-10 -my-10">
               <motion.h1
                 initial={{ y: "100%" }}
@@ -277,40 +262,21 @@ export default function CaseStudy({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.3, ease: [0.76, 0, 0.24, 1] }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-y-8 border-t border-b border-zinc-300 dark:border-zinc-800 py-6 mt-12 md:mt-24"
+              className="grid grid-cols-2 md:grid-cols-4 gap-y-6 border-t border-b border-zinc-300 dark:border-zinc-800 py-4 mt-12 md:mt-24 type-micro"
             >
-              <div className="flex flex-col gap-2">
-                <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-zinc-400">
-                  Client
-                </span>
-                <span className="text-xs font-bold uppercase tracking-widest">
-                  {project.client}
-                </span>
-              </div>
-              <div className="flex flex-col gap-2">
-                <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-zinc-400">
-                  Role
-                </span>
-                <span className="text-xs font-bold uppercase tracking-widest">
-                  {project.role}
-                </span>
-              </div>
-              <div className="flex flex-col gap-2">
-                <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-zinc-400">
-                  Timeline
-                </span>
-                <span className="text-xs font-bold uppercase tracking-widest">
-                  {project.timeline}
-                </span>
-              </div>
-              <div className="flex flex-col gap-2">
-                <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-zinc-400">
-                  Location
-                </span>
-                <span className="text-xs font-bold uppercase tracking-widest">
-                  {project.location}
-                </span>
-              </div>
+              {[
+                ["Client", project.client],
+                ["Role", project.role],
+                ["Timeline", project.timeline],
+                ["Location", project.location],
+              ].map(([label, value]) => (
+                <div key={label} className="flex flex-col">
+                  <span className="text-zinc-500">{label}</span>
+                  <span className="text-zinc-900 dark:text-zinc-100">
+                    {value}
+                  </span>
+                </div>
+              ))}
             </motion.div>
           </section>
 
@@ -330,21 +296,19 @@ export default function CaseStudy({
             </motion.div>
           </section>
 
-          <section className="px-6 md:px-12 py-24 md:py-40 max-w-[1800px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 relative z-10">
-            <div className="md:col-span-4 flex flex-col gap-8">
-              <h2 className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-400">
-                The Challenge
-              </h2>
-              <div className="hidden md:block w-[1px] h-24 bg-zinc-300 dark:bg-zinc-800 mt-auto origin-top" />
-            </div>
-            <div className="md:col-span-8 md:col-start-6">
-              <p className="text-3xl md:text-5xl font-medium leading-[1.1] tracking-tight">
-                {project.challenge}
-              </p>
-            </div>
+          <section className="px-5 md:px-8 py-[16vh] relative z-10">
+            <LinerNotes
+              passages={[
+                {
+                  label: "The Challenge",
+                  indent: "33%",
+                  segments: [project.challenge],
+                },
+              ]}
+            />
           </section>
 
-          <section className="px-6 md:px-12 pb-32 max-w-[1800px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-12 relative z-10 cursor-auto md:cursor-none">
+          <section className="px-5 md:px-8 pb-32 grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-12 relative z-10 cursor-auto md:cursor-none">
             <ParallaxGalleryImage
               src={project.images[0]}
               alt="Detail 1"
@@ -371,31 +335,41 @@ export default function CaseStudy({
             onMouseLeave={() => cursorOpacity.set(0)}
             className="relative w-full h-[100dvh] bg-zinc-950 text-zinc-100 flex flex-col items-center justify-center overflow-hidden z-20 cursor-auto md:cursor-none block"
           >
-            <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-zinc-500 mb-8 transition-colors hover:text-[#CCFF00]">
-              Next Project
-            </p>
-            <div className="group flex overflow-hidden pt-4 pb-2 px-8 -mt-4 -mb-2 -mx-8 relative z-10 cursor-auto md:cursor-none">
+            <Label className="mb-8">Next Project</Label>
+            {/* Long names wrap between words; each word clips its own
+                letters so the hover copies stay hidden on every line */}
+            <div className="group flex flex-wrap justify-center gap-x-[0.25em] text-[9vw] relative z-10 cursor-auto md:cursor-none">
               {project.nextProject.name
-                .split("")
-                .map((char: string, index: number) => (
-                  <span
-                    key={index}
-                    className="relative inline-block"
-                    style={{ whiteSpace: char === " " ? "pre" : "normal" }}
-                  >
+                .split(" ")
+                .map((word: string, wordIndex: number, words: string[]) => {
+                  const offset = words
+                    .slice(0, wordIndex)
+                    .reduce((sum, w) => sum + w.length, 0);
+                  return (
                     <span
-                      className="block transition-transform duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full"
-                      style={{ transitionDelay: `${index * 0.02}s` }}
+                      key={wordIndex}
+                      className="flex overflow-hidden pt-4 pb-2 -mt-4 -mb-2"
                     >
-                      <span className="block text-[12vw] font-black font-neue leading-none tracking-tighter uppercase pr-[0.1em]">
-                        {char}
-                      </span>
-                      <span className="absolute left-0 top-full block text-[12vw] font-black font-neue leading-none tracking-tighter uppercase pr-[0.1em]">
-                        {char}
-                      </span>
+                      {word.split("").map((char, charIndex) => (
+                        <span key={charIndex} className="relative inline-block">
+                          <span
+                            className="block transition-transform duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full"
+                            style={{
+                              transitionDelay: `${(offset + charIndex) * 0.02}s`,
+                            }}
+                          >
+                            <span className="block font-black font-neue leading-none tracking-tighter uppercase pr-[0.1em]">
+                              {char}
+                            </span>
+                            <span className="absolute left-0 top-full block font-black font-neue leading-none tracking-tighter uppercase pr-[0.1em]">
+                              {char}
+                            </span>
+                          </span>
+                        </span>
+                      ))}
                     </span>
-                  </span>
-                ))}
+                  );
+                })}
             </div>
 
             {/* THE FIX: Added `hidden md:flex` to prevent the ghost cursor bug on mobile touchscreens */}
@@ -407,21 +381,12 @@ export default function CaseStudy({
                 translateX: "-50%",
                 translateY: "-50%",
               }}
-              className="absolute top-0 left-0 w-32 h-32 rounded-full bg-[#CCFF00] text-zinc-900 hidden md:flex items-center justify-center text-xs font-bold tracking-widest uppercase pointer-events-none z-50 mix-blend-difference"
+              className="absolute top-0 left-0 w-32 h-32 rounded-full bg-[#CCFF00] text-zinc-900 hidden md:flex items-center justify-center type-label pointer-events-none z-50 mix-blend-difference"
             >
               View
             </motion.div>
           </a>
-        </div>
-
-        <div
-          ref={footerRef}
-          className="fixed bottom-0 left-0 w-full z-0 pointer-events-none"
-        >
-          <div className="pointer-events-auto">
-            <Footer />
-          </div>
-        </div>
+        </RevealFooter>
       </main>
     </>
   );

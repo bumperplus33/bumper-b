@@ -233,14 +233,14 @@ export default function FeaturedWorks() {
               </div>
               <div className="flex justify-between items-end">
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 mb-2">
+                  <span className="type-micro text-zinc-500 dark:text-zinc-400 mb-2">
                     {project.client}
                   </span>
-                  <span className="text-3xl font-bold tracking-tight uppercase leading-none text-zinc-900 dark:text-zinc-100">
+                  <span className="type-heading text-zinc-900 dark:text-zinc-100">
                     {project.name}
                   </span>
                 </div>
-                <span className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 pb-1">
+                <span className="type-micro text-zinc-500 dark:text-zinc-400 pb-1">
                   {project.tag}
                 </span>
               </div>
@@ -253,22 +253,16 @@ export default function FeaturedWorks() {
               onMouseEnter={() => handleMouseEnterRow(index)}
               className="hidden md:flex w-full h-[55px] justify-between items-start"
             >
-              <MaskText
-                align="left"
-                className="flex-1 text-[14px] font-bold tracking-[0.2em] uppercase pt-[6px]"
-              >
+              <MaskText align="left" className="flex-1 type-micro pt-[6px]">
                 {project.client}
               </MaskText>
               <MaskText
                 align="center"
-                className="flex-[4] text-[60px] font-bold tracking-tight uppercase leading-none"
+                className="flex-[4] font-neue text-[60px] tracking-[-0.02em] leading-none"
               >
                 {project.name}
               </MaskText>
-              <MaskText
-                align="right"
-                className="flex-1 text-[14px] font-bold tracking-[0.2em] uppercase pt-[6px]"
-              >
+              <MaskText align="right" className="flex-1 type-micro pt-[6px]">
                 {project.tag}
               </MaskText>
             </motion.div>
