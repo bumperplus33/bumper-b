@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, Suspense, useMemo, useState } from "react";
+import { useRef, useEffect, Suspense, useMemo } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
@@ -70,30 +70,17 @@ function GlitchMesh({
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
-  const texture = useTexture(textureUrl);
+  const texture = useTexture(textureUrl, (loaded) => {
+    for (const t of [loaded].flat()) t.colorSpace = THREE.SRGBColorSpace;
+  });
 
-  // THE FIX: State for the 1.5 second burst
-  const [isGlitching, setIsGlitching] = useState(false);
+  // Hovering starts a 1.5 second burst; leaving ends it at once. Only the
+  // render loop needs this, so it's a timestamp rather than React state.
+  const glitchUntil = useRef(0);
 
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    if (active) {
-      setIsGlitching(true);
-      timeout = setTimeout(() => {
-        setIsGlitching(false); // Turn off the glitch after 1.5 seconds!
-      }, 1500);
-    } else {
-      setIsGlitching(false);
-    }
-    return () => clearTimeout(timeout);
+    glitchUntil.current = active ? performance.now() + 1500 : 0;
   }, [active]);
-
-  useEffect(() => {
-    if (texture) {
-      texture.colorSpace = THREE.SRGBColorSpace;
-      texture.needsUpdate = true;
-    }
-  }, [texture]);
 
   const uniforms = useMemo(() => {
     // Grab the intrinsic width/height of the actual image file
@@ -119,7 +106,7 @@ function GlitchMesh({
     materialRef.current.uniforms.uTime.value += delta;
 
     // Smoothly fade the glitch in and out based on the timer
-    const targetHover = isGlitching ? 1 : 0;
+    const targetHover = performance.now() < glitchUntil.current ? 1 : 0;
     materialRef.current.uniforms.uHoverState.value +=
       (targetHover - materialRef.current.uniforms.uHoverState.value) * 0.1;
 

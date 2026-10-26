@@ -18,7 +18,19 @@ import Label from "@/components/ui/Label";
 import { useHud } from "@/hooks/useHud";
 
 // FULLY MAPPED SEQUENCE
-const PROJECT_DB: Record<string, any> = {
+interface ProjectDetail {
+  name: string;
+  client: string;
+  role: string;
+  timeline: string;
+  location: string;
+  heroImage: string;
+  images: string[];
+  challenge: string;
+  nextProject: { name: string; slug: string };
+}
+
+const PROJECT_DB: Record<string, ProjectDetail> = {
   "native-instruments": {
     name: "Native Instruments",
     client: "NI GmbH",
