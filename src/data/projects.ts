@@ -73,4 +73,30 @@ export const PROJECTS: Project[] = [
     role: "Event",
     id: "08",
   },
+  // Added with their project pages; thumbnails are each page's first gallery
+  // image, since their hero images already appear in this grid.
+  {
+    name: "DPSC x Puma",
+    location: "Global / 2022",
+    src: "/images/project-9.jpg",
+    slug: "dpsc-puma",
+    role: "Creative Concept",
+    id: "09",
+  },
+  {
+    name: "Grid 7 Years",
+    location: "Berlin / 2022",
+    src: "/images/project-12.jpg",
+    slug: "grid-7-years",
+    role: "Art Direction",
+    id: "10",
+  },
+  {
+    name: "Music Battle",
+    location: "Global / 2021",
+    src: "/images/project-11.jpg",
+    slug: "puma-music",
+    role: "Direction",
+    id: "11",
+  },
 ];
