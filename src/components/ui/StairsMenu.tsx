@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  motion,
-  AnimatePresence,
-  Variants,
-  useMotionValue,
-  useSpring,
-} from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useTransitionRouter } from "next-view-transitions";
 import { usePathname } from "next/navigation";
 import { triggerPaperPushTransition } from "@/utils/animations";
@@ -63,33 +57,6 @@ export default function StairsMenu({
   const router = useTransitionRouter();
   const pathname = usePathname();
 
-  const closeX = useMotionValue(0);
-  const closeY = useMotionValue(0);
-
-  const closeXSpring = useSpring(closeX, {
-    stiffness: 150,
-    damping: 15,
-    mass: 0.1,
-  });
-  const closeYSpring = useSpring(closeY, {
-    stiffness: 150,
-    damping: 15,
-    mass: 0.1,
-  });
-
-  const handleCloseMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const hX = e.clientX - (rect.left + rect.width / 2);
-    const hY = e.clientY - (rect.top + rect.height / 2);
-    closeX.set(hX * 0.5);
-    closeY.set(hY * 0.5);
-  };
-
-  const handleCloseMouseLeave = () => {
-    closeX.set(0);
-    closeY.set(0);
-  };
-
   const handleNavigation =
     (path: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();
@@ -124,118 +91,131 @@ export default function StairsMenu({
             ))}
           </div>
 
-          <div
-            className="absolute top-0 right-0 z-10 w-32 h-32 md:w-64 md:h-64 pointer-events-auto flex items-start justify-end"
-            onMouseMove={handleCloseMouseMove}
-            onMouseLeave={handleCloseMouseLeave}
+          {/* Top bar: sits where the HUD's own links sit */}
+          <motion.div
+            variants={opacityAnim}
+            initial="initial"
+            animate="enter"
+            exit="exit"
+            className="relative z-10 flex justify-between items-start px-5 md:px-8 pt-5 type-micro text-zinc-900 pointer-events-auto"
           >
-            <motion.button
-              style={{ x: closeXSpring, y: closeYSpring }}
-              variants={opacityAnim}
-              initial="initial"
-              animate="enter"
-              exit="exit"
+            <p className="type-label flex items-center gap-2">
+              <span className="block w-[7px] h-[7px] rounded-full bg-zinc-900" />
+              Menu
+            </p>
+            <button
+              type="button"
               onClick={closeMenu}
-              className="group flex flex-col items-center justify-center w-20 h-20 md:w-24 md:h-24 bg-transparent hover:scale-105 transition-transform duration-500 cursor-pointer"
+              className="group flex items-center gap-2 cursor-pointer hover:opacity-60 transition-opacity"
             >
-              <span className="mb-1 md:mb-2 text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase leading-none hover:opacity-50 transition-opacity text-zinc-900">
-                Close
-              </span>
+              Close
               <svg
-                width="24"
-                height="24"
                 viewBox="0 0 68 68"
                 fill="none"
-                className="transform transition-transform group-hover:rotate-90 duration-500 text-zinc-900 w-5 h-5 md:w-6 md:h-6"
+                aria-hidden
+                className="w-[9px] h-[9px] transition-transform duration-500 group-hover:rotate-90"
               >
                 <path
                   d="M1.5 1.5L67 67"
                   stroke="currentColor"
-                  strokeWidth="4"
+                  strokeWidth="8"
                 />
                 <path
                   d="M66.5 1L0.999997 66.5"
                   stroke="currentColor"
-                  strokeWidth="4"
+                  strokeWidth="8"
                 />
               </svg>
-            </motion.button>
-          </div>
+            </button>
+          </motion.div>
 
-          <div className="relative z-10 flex flex-col items-center justify-center flex-1 pointer-events-auto text-zinc-900 gap-4 md:gap-6 mt-16 md:mt-24 px-6 md:px-24">
-            {NAV_LINKS.map((link, linkIndex) => {
-              const staggerOffset = linkIndex * 5;
+          {/* The links as a numbered index */}
+          <nav
+            aria-label="Site menu"
+            className="relative z-10 flex-1 flex flex-col justify-center px-5 md:px-8 pointer-events-auto text-zinc-900"
+          >
+            <ul className="border-t border-zinc-900/20">
+              {NAV_LINKS.map((link, linkIndex) => {
+                const staggerOffset = linkIndex * 5;
+                const isCurrent = pathname === link.href;
 
-              return (
-                <a
-                  key={link.title}
-                  href={link.href}
-                  onClick={handleNavigation(link.href)}
-                  className="group flex items-center justify-center overflow-hidden border border-transparent group-hover:border-zinc-900 px-4 md:px-16 py-3 md:py-6 relative transition-all duration-300 rounded-lg"
-                >
-                  <div className="flex overflow-hidden pt-0 pb-0 px-4 md:px-8 -mt-2 md:-mt-4 -mb-0 -mx-4 md:-mx-8">
-                    {link.title.split("").map((char, charIndex) => (
-                      <motion.span
-                        key={charIndex}
-                        custom={charIndex + staggerOffset}
-                        variants={charAnim}
-                        initial="initial"
-                        animate="enter"
-                        exit="exit"
-                        className="relative inline-block"
-                        style={{ whiteSpace: char === " " ? "pre" : "normal" }}
+                return (
+                  <li key={link.title} className="border-b border-zinc-900/20">
+                    <a
+                      href={link.href}
+                      onClick={handleNavigation(link.href)}
+                      aria-current={isCurrent ? "page" : undefined}
+                      className="group grid grid-cols-12 items-baseline gap-4 py-3 outline-none"
+                    >
+                      <span className="col-span-2 md:col-span-1 type-micro opacity-60">
+                        {String(linkIndex + 1).padStart(2, "0")}
+                      </span>
+                      <span
+                        className="col-span-7 md:col-span-9 flex overflow-hidden type-display"
+                        // Room for descenders, so a rolled-away letter's tail
+                        // doesn't peek in above the copy replacing it
+                        style={{ lineHeight: 1.2 }}
                       >
-                        <span
-                          className="block transition-transform duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full"
-                          style={{ transitionDelay: `${charIndex * 0.02}s` }}
-                        >
-                          <span className="block text-5xl md:text-8xl font-black font-neue tracking-tighter uppercase leading-none pr-[0.1em]">
-                            {char}
-                          </span>
-                          <span className="absolute left-0 top-full block text-5xl md:text-8xl font-black font-neue tracking-tighter uppercase leading-none pr-[0.1em] italic opacity-60">
-                            {char}
-                          </span>
-                        </span>
-                      </motion.span>
-                    ))}
-                  </div>
-                </a>
-              );
-            })}
-          </div>
+                        {link.title.split("").map((char, charIndex) => (
+                          <motion.span
+                            key={charIndex}
+                            custom={charIndex + staggerOffset}
+                            variants={charAnim}
+                            initial="initial"
+                            animate="enter"
+                            exit="exit"
+                            className="relative inline-block"
+                          >
+                            <span
+                              className="block transition-transform duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full group-focus-visible:-translate-y-full"
+                              style={{
+                                transitionDelay: `${charIndex * 0.02}s`,
+                              }}
+                            >
+                              <span className="block">{char}</span>
+                              <span className="absolute left-0 top-full block italic opacity-60">
+                                {char}
+                              </span>
+                            </span>
+                          </motion.span>
+                        ))}
+                      </span>
+                      <span className="col-span-3 md:col-span-2 type-micro text-right opacity-60">
+                        {isCurrent ? "Current page" : ""}
+                      </span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
 
-          <div className="relative z-10 w-full p-6 md:p-8 flex justify-center gap-6 md:gap-8 pointer-events-auto text-zinc-900 font-bold tracking-[0.2em] uppercase text-[10px] md:text-xs">
-            <motion.a
-              variants={opacityAnim}
-              initial="initial"
-              animate="enter"
-              exit="exit"
-              href="#"
-              className="hover:opacity-50 transition-opacity"
+          {/* Bottom row: the footer's small type */}
+          <motion.div
+            variants={opacityAnim}
+            initial="initial"
+            animate="enter"
+            exit="exit"
+            className="relative z-10 w-full flex justify-between items-end px-5 md:px-8 pb-5 type-micro text-zinc-900 pointer-events-auto"
+          >
+            <a
+              href="mailto:hello@soju.studio"
+              className="hover:opacity-60 transition-opacity"
             >
-              Instagram
-            </motion.a>
-            <motion.a
-              variants={opacityAnim}
-              initial="initial"
-              animate="enter"
-              exit="exit"
-              href="#"
-              className="hover:opacity-50 transition-opacity"
-            >
-              Twitter
-            </motion.a>
-            <motion.a
-              variants={opacityAnim}
-              initial="initial"
-              animate="enter"
-              exit="exit"
-              href="#"
-              className="hover:opacity-50 transition-opacity"
-            >
-              LinkedIn
-            </motion.a>
-          </div>
+              hello@soju.studio
+            </a>
+            <div className="flex gap-6">
+              {["Instagram", "Twitter", "LinkedIn"].map((name) => (
+                <a
+                  key={name}
+                  href="#"
+                  className="hover:opacity-60 transition-opacity"
+                >
+                  {name}
+                </a>
+              ))}
+            </div>
+          </motion.div>
         </div>
       )}
     </AnimatePresence>
