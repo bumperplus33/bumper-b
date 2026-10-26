@@ -11,6 +11,7 @@ import { Link } from "next-view-transitions";
 
 const LINKS = [
   { title: "Work", href: "/work" },
+  { title: "Sequencer", href: "/sequencer" },
   { title: "About", href: "/about" },
 ];
 
@@ -19,13 +20,16 @@ const LINKS = [
 export default function NavBar() {
   const { scrollYProgress } = useScroll();
   const pathname = usePathname();
-  const [isHidden, setIsHidden] = useState(false);
+  const [nearBottom, setNearBottom] = useState(false);
+  // A scroll-locked page can't scroll, so its scroll progress means nothing
+  const isScrollLocked = useStore((state) => state.isScrollLocked);
+  const isHidden = nearBottom && !isScrollLocked;
   const [menuOpen, setMenuOpen] = useState(false);
   const hud = useStore((state) => state.hud);
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     // Get out of the way of the footer at the very bottom of the page
-    setIsHidden(latest > 0.95);
+    setNearBottom(latest > 0.95);
   });
 
   return (

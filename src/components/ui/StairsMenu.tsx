@@ -93,6 +93,7 @@ function Rule({ index, className }: { index: number; className: string }) {
 const NAV_LINKS = [
   { title: "Home", href: "/" },
   { title: "Projects", href: "/work" },
+  { title: "Sequencer", href: "/sequencer" },
   { title: "About", href: "/about" },
 ];
 

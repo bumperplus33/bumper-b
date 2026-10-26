@@ -11,8 +11,7 @@ interface AppState {
   setScroll: (progress: number, velocity: number) => void;
 
   // 3. BROWSER PIPELINE STATE: SmoothScrollProvider stops Lenis and locks the
-  // body while this is true. No route sets it yet; it's there for a future
-  // immersive, scroll-locked WebGL route.
+  // body while this is true. The Sequencer route sets it while mounted.
   isScrollLocked: boolean;
   setScrollLocked: (locked: boolean) => void;
 
