@@ -10,6 +10,7 @@ import StickyHeroReveal from "@/components/sections/StickyHeroReveal";
 import SingletonGlitch from "@/components/webgl/SingletonGlitch";
 import FeaturedWorks from "@/components/sections/FeaturedWorks";
 import { PROJECTS } from "@/data/projects";
+import Label from "@/components/ui/Label";
 import { useHud } from "@/hooks/useHud";
 
 export default function WorkGallery() {
@@ -46,17 +47,13 @@ export default function WorkGallery() {
               ${isCinematicMode ? "bg-zinc-100/40 dark:bg-zinc-950/40 backdrop-blur-sm" : "bg-zinc-100 dark:bg-zinc-950"}
             `}
           >
-            <div className="px-6 md:px-12 max-w-[1800px] mx-auto mb-32 relative z-20">
-              <p className="mb-12 text-sm font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400">
-                Featured Works
-              </p>
+            <div className="px-5 md:px-8 mb-32 relative z-20">
+              <Label className="mb-12">Featured Works</Label>
               <FeaturedWorks />
             </div>
 
-            <div className="px-6 md:px-12 max-w-[1800px] mx-auto">
-              <p className="mb-12 text-sm font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400">
-                Project Archive
-              </p>
+            <div className="px-5 md:px-8">
+              <Label className="mb-12">Project Archive</Label>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-16 md:gap-x-8 md:gap-y-24">
                 {PROJECTS.map((project, index) => {
                   const isHovered = hoveredIndex === index;
@@ -91,16 +88,12 @@ export default function WorkGallery() {
                           />
                         </div>
 
-                        <div className="flex justify-between items-start border-t border-zinc-200 dark:border-zinc-800 pt-3">
-                          <div className="flex flex-col gap-1">
-                            <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-zinc-400">
-                              Index — {project.id}
-                            </span>
-                            <h2 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-                              {project.name}
-                            </h2>
-                          </div>
-                          <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-zinc-400 text-right mt-[18px]">
+                        <div className="flex justify-between items-baseline gap-4 border-t border-zinc-200 dark:border-zinc-800 pt-3 type-micro">
+                          <h2 className="flex gap-4 text-zinc-900 dark:text-zinc-100">
+                            <span className="text-zinc-500">{project.id}</span>
+                            {project.name}
+                          </h2>
+                          <span className="text-zinc-400 text-right">
                             {project.role}
                           </span>
                         </div>

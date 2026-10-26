@@ -5,6 +5,7 @@ import { useTransitionRouter } from "next-view-transitions";
 import { triggerPaperPushTransition } from "@/utils/animations";
 import FocusImage from "@/components/webgl/FocusImage";
 import { PROJECTS } from "@/data/projects";
+import Label from "@/components/ui/Label";
 
 const SOURCES = PROJECTS.map((project) => project.src);
 
@@ -24,11 +25,8 @@ export default function WorksIndex() {
 
   return (
     <section className="px-5 md:px-8 py-[12vw]">
-      <div className="flex justify-between items-center text-[11px] text-zinc-400 border-b border-zinc-800 pb-3 mb-2">
-        <p className="flex items-center gap-2 text-zinc-100 uppercase tracking-[0.04em]">
-          <span className="block w-[7px] h-[7px] rounded-full bg-accent" />
-          Index
-        </p>
+      <div className="flex justify-between items-center type-micro text-zinc-400 border-b border-zinc-800 pb-3 mb-2">
+        <Label>Index</Label>
         <p>{String(PROJECTS.length).padStart(2, "0")} projects</p>
       </div>
 
@@ -48,16 +46,16 @@ export default function WorksIndex() {
                   onFocus={() => setActive(i)}
                   className={`grid grid-cols-12 items-baseline gap-4 py-3 transition-opacity duration-500 ${isDimmed ? "opacity-25" : "opacity-100"}`}
                 >
-                  <span className="col-span-2 md:col-span-1 text-[11px] text-zinc-500">
+                  <span className="col-span-2 md:col-span-1 type-micro text-zinc-500">
                     {project.id}
                   </span>
-                  <span className="col-span-10 md:col-span-6 font-neue text-[7vw] md:text-[3vw] leading-none tracking-[-0.02em]">
+                  <span className="col-span-10 md:col-span-6 type-heading">
                     {project.name}
                   </span>
-                  <span className="hidden md:block col-span-3 text-[11px] text-zinc-400">
+                  <span className="hidden md:block col-span-3 type-micro text-zinc-400">
                     {project.role}
                   </span>
-                  <span className="hidden md:block col-span-2 text-[11px] text-zinc-400 text-right">
+                  <span className="hidden md:block col-span-2 type-micro text-zinc-400 text-right">
                     {project.location}
                   </span>
                 </a>
@@ -74,7 +72,7 @@ export default function WorksIndex() {
               alt={PROJECTS[active].name}
               className="w-[16vw] aspect-[3/4] bg-zinc-900"
             />
-            <p className="text-[11px] text-zinc-400 w-[16vw]">
+            <p className="type-micro text-zinc-400 w-[16vw]">
               {PROJECTS[active].id} — {PROJECTS[active].name}
             </p>
           </div>

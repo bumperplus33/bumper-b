@@ -31,6 +31,47 @@ body {
   font-family: var(--font-sans);
 }
 
+/* =========================================
+   TYPE SCALE: the HUD system, shared by every page
+   ========================================= */
+
+/* Small type: nav, metadata, notes, captions */
+@utility type-micro {
+  font-size: 11px;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+}
+
+/* Section labels, used with the accent dot (components/ui/Label.tsx) */
+@utility type-label {
+  font-size: 11px;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Index rows and names */
+@utility type-heading {
+  font-family: var(--font-neue-montreal), Helvetica, Arial, sans-serif;
+  font-size: 7vw;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  @media (width >= 48rem) {
+    font-size: 3vw;
+  }
+}
+
+/* Paragraphs read as display type */
+@utility type-display {
+  font-family: var(--font-neue-montreal), Helvetica, Arial, sans-serif;
+  font-size: 8.4vw;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  @media (width >= 48rem) {
+    font-size: 4.4vw;
+  }
+}
+
 body {
   /* Prevents the trackpad from navigating back/forward on horizontal swipes */
   overscroll-behavior-x: none;

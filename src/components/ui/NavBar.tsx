@@ -45,7 +45,7 @@ export default function NavBar() {
         }}
         animate={isHidden ? "hidden" : "visible"}
         transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1] }}
-        className="fixed top-0 left-0 w-full z-50 flex justify-between items-start gap-8 px-5 md:px-8 pt-5 text-[11px] leading-[1.25] tracking-[0.02em] text-zinc-100 mix-blend-difference pointer-events-none"
+        className="fixed top-0 left-0 w-full z-50 flex justify-between items-start gap-8 px-5 md:px-8 pt-5 type-micro text-zinc-100 mix-blend-difference pointer-events-none"
       >
         {/* LEFT: logo and links */}
         <div className="flex items-start gap-8 md:gap-16 pointer-events-auto">

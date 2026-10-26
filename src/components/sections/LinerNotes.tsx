@@ -9,6 +9,7 @@ import {
   useTransform,
 } from "framer-motion";
 import { Link } from "next-view-transitions";
+import Label from "@/components/ui/Label";
 
 // Editorial passages in the style of a record's liner notes: big type that
 // brightens word by word as it is read, with a small label or margin note
@@ -95,13 +96,8 @@ function PassageBlock({ passage }: { passage: Passage }) {
       style={{ "--indent": passage.indent } as React.CSSProperties}
     >
       {/* The indent slot: a label, or the note for the hovered phrase */}
-      <aside className="md:absolute md:left-0 md:top-[0.6vw] md:w-[calc(var(--indent)-2vw)] mb-4 md:mb-0 text-[11px] leading-[1.3] text-zinc-400">
-        {passage.label && (
-          <p className="flex items-center gap-2 text-zinc-100 uppercase tracking-[0.04em]">
-            <span className="block w-[7px] h-[7px] rounded-full bg-accent" />
-            {passage.label}
-          </p>
-        )}
+      <aside className="md:absolute md:left-0 md:top-[0.6vw] md:w-[calc(var(--indent)-2vw)] mb-4 md:mb-0 type-micro text-zinc-400">
+        {passage.label && <Label>{passage.label}</Label>}
         {activeNote && (
           <motion.div
             key={activeNote.href}
@@ -123,7 +119,7 @@ function PassageBlock({ passage }: { passage: Passage }) {
         )}
       </aside>
 
-      <p className="font-neue text-[8.4vw] md:text-[4.4vw] leading-[0.98] tracking-[-0.02em] text-zinc-100 md:[text-indent:var(--indent)]">
+      <p className="type-display text-zinc-100 md:[text-indent:var(--indent)]">
         {passage.segments.map((segment, i) =>
           typeof segment === "string" ? (
             <span key={i}>
