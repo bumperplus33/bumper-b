@@ -1,88 +1,167 @@
-Here is the comprehensive `README.md` for the **Bumper B** boilerplate, synthesizing the architectural strategies, industry context, and technical paradigms required for elite creative development.
+# Bumper B
 
----
+The site for **SOJU**, a digital creative studio, built with Next.js and React Three Fiber.
 
-# Bumper B: The Elite WebGL Hybrid Boilerplate
+The pages are ordinary HTML laid out with Tailwind, and a single WebGL canvas behind them adds a few image effects that follow DOM elements on screen. The look is type-first: a small text HUD, big display paragraphs, and small WebGL images rather than full-screen 3D.
 
-**Bumper B** is a highly scalable Next.js 14+ and React Three Fiber (R3F) boilerplate. It is engineered specifically for creative agencies and technical directors who need to build Awwwards-tier digital experiences.
+## Getting started
 
-Unlike standard boilerplates that force developers into a single rendering paradigm, Bumper B is a **Hybrid Engine**. It seamlessly orchestrates two fundamentally opposed architectural strategies—Native DOM layouts and hijacked Immersive WebGL—using a robust Zustand state controller and a Singleton Canvas architecture.
+```bash
+npm install
+npm run dev     # http://localhost:3000
+npm run build   # production build (type-checks too)
+npm run start   # serve the production build
+npm run lint
+```
 
----
+**Stack:**
+- Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4
+- React Three Fiber 9, drei, three
+- Lenis for smooth scrolling, Framer Motion for DOM animation, Zustand for shared state
+- `next-view-transitions` for page transitions, `tunnel-rat` for sending scenes into the canvas
 
-## 🏗 Core Architecture
+## Architecture
 
-Bumper B solves the classic "React vs. WebGL" conflict through three foundational pillars:
+### 1. One canvas for the whole site
 
-1. **The Singleton Canvas (`layout.tsx`):** The `<GlobalCanvas>` sits permanently at `z-[40]` in the root layout. It never unmounts during page transitions, ensuring 3D assets, shaders, and memory are perfectly preserved across the entire user journey.
-2. **The Teleporter (`tunnel-rat`):** Page-level components use `<tunnel.In>` to teleport complex 3D scenes into the background Canvas, allowing for modular, page-specific WebGL development without prop-drilling or Context hell.
-3. **The Air Traffic Controller (Zustand):** A global state manager that dynamically controls the browser's rendering pipeline. It toggles Lenis smooth-scrolling and CSS `overflow` states based on the active route, preventing the React lifecycle from interfering with 60fps WebGL render loops.
+`<GlobalCanvas />` (`src/components/webgl/GlobalCanvas.tsx`) is rendered once in `src/app/layout.tsx`. It is fixed full-screen at `z-[40]` with `pointer-events: none`, so it sits over the page without blocking clicks. It listens for pointer events on `document.body`.
 
----
+**What survives a page change:**
+- The canvas and its WebGL context.
+- drei's texture cache, so an image already loaded as a texture isn't fetched again.
 
-## 🧭 Development Strategies
+**What doesn't:**
+- The scenes. Each scene belongs to the page that renders it, so its meshes and materials are created when the page mounts and removed when it unmounts.
 
-Bumper B is designed to execute two distinct architectural strategies. Understanding when to deploy each is critical for matching the project to the client's audience.
+The canvas runs with `frameloop="always"`, so it renders every frame even on pages with no WebGL (About).
 
-### Strategy 1: The DOM-to-Canvas Sync (Native CSS Engine)
+### 2. Sending scenes into the canvas (`tunnel-rat`)
 
-**The Concept:** The layout is dictated entirely by standard HTML/Tailwind CSS. Invisible DOM nodes (`<div>`) are rendered in the HTML layer. The WebGL engine continuously tracks these nodes using `getBoundingClientRect()` and teleports 3D planes to match their exact screen coordinates.
+`src/providers/TunnelProvider.ts` exports one tunnel. A component anywhere in the page renders its scene inside `<tunnel.In>`, and the canvas renders everything that arrives at `<tunnel.Out />`. Page code can own its WebGL without the canvas knowing about it.
 
-- **Best For:** Luxury E-Commerce, Enterprise SaaS, Editorial Scrollytelling.
-- **Target Audience:** Users requiring high accessibility, perfect mobile responsiveness, and familiar browser mechanics.
-- **Pros:**
-  - **Perfect Responsiveness:** Leverages CSS Grid and Flexbox for layout; no complex 3D math required to align items on different screen sizes.
-  - **CMS Integration:** Easily hooks into Headless CMS platforms (Sanity, Shopify), making it scalable for large editorial teams.
-  - **Native Interactions:** Uses standard React `onMouseEnter` and `onClick` events, making the site feel grounded and predictable.
-- **Cons:**
-  - **Performance Ceiling:** Tracking dozens of DOM elements simultaneously can cause frame drops on low-end mobile devices due to heavy browser layout repaints.
-  - **Restricted Physics:** Elements cannot easily break out of their CSS constraints to perform wild, screen-spanning 3D animations.
+In use:
+- `FocusImage`: the small image in Home's liner notes.
+- `SingletonGlitch`: the hover glitch on the Work archive cards.
 
-### Strategy 2: The DOM Sandwich (Hijacked Immersive Engine)
+### 3. DOM-to-canvas sync
 
-**The Concept:** The browser's native scroll pipeline is intentionally killed (`overflow-hidden`). The WebGL engine takes absolute control of the layout using pure mathematics. HTML is used only as a physical "mask" (the bread) behind and in front of the WebGL canvas (the meat) to handle crisp typography and framing.
+Both WebGL components follow the same pattern:
+1. Render an ordinary DOM box with an `<img>` inside it.
+2. Every frame, measure the box with `getBoundingClientRect()`.
+3. Move and scale a plane in the canvas to cover it exactly.
 
-- **Best For:** Experimental Portfolios, Movie Promos, Gamified Hubs, Conceptual Art Direction.
-- **Target Audience:** Audiences seeking high-impact, narrative-driven, and highly interactive digital art.
-- **Pros:**
-  - **Unbound Physics:** Elements can orbit, scatter, and form infinite carousels because CSS no longer restricts them.
-  - **Flawless 60fps:** Because the DOM is not repainting on scroll, the GPU can dedicate 100% of its resources to rendering complex custom GLSL shaders and fluid dynamics.
-- **Cons:**
-  - **Accessibility Hurdles:** Screen readers struggle with hijacked scrolling and math-based navigation.
-  - **Development Complexity:** Requires advanced knowledge of custom easing, `lerp` functions, and viewport mathematics to ensure elements scale correctly across devices.
+The layout stays in CSS and works at any screen size. The DOM image is the fallback while textures load or if WebGL is unavailable.
 
----
+`FocusImage` (`src/components/webgl/FocusImage.tsx`):
+- Bends the plane and splits its colour channels with scroll speed.
+- Dissolves between pictures when its `index` prop changes.
+- Turns motion off under `prefers-reduced-motion`.
 
-## 🏛 Industry Context: Agencies & Developers
+### 4. Shared state (`src/store/useStore.ts`)
 
-Bumper B was engineered by analyzing the production pipelines of the world's most awarded creative developers and agencies. This boilerplate allows teams to emulate their signature styles.
+A Zustand store holds what several components need:
 
-### The Agencies
+| State | Set by | Read by |
+| --- | --- | --- |
+| `isLoading` | `Preloader` | `Preloader`, `ClunkyReveal` (hero title reveal) |
+| `scrollProgress`, `scrollVelocity` | `SmoothScrollProvider`, on every Lenis scroll | `FocusImage`, inside its render loop via `getState()`, so scrolling doesn't re-render React |
+| `hud` | pages, through `useHud()` | `NavBar` (the metadata in the top-right corner) |
+| `isScrollLocked` | **nothing yet** | `SmoothScrollProvider` |
+| `horizontalGl*`, `activeProject`, `isHorizontalGalleryActive` | `HorizontalGLParallaxBlock` | that block and its scene; neither is on a page |
 
-- **The Creative Commerce Masters (Basic Agency, Work & Co):** These agencies excel at the **DOM-to-Canvas Sync**. They prioritize massive scalability, brand systems, and conversion rates. Bumper B supports this by allowing standard Tailwind layouts to be enhanced with lightweight WebGL hover distortions without sacrificing Next.js caching or SSR.
-- **The Hybrid Architects (Antinomy Studio, 14islands):** Masters of blending robust React software engineering with mind-bending 3D. Bumper B’s core architecture—specifically the R3F Singleton Canvas—is modeled heavily after their approach to scalable creative web development.
-- **The Scrollytelling Pioneers (Jam3):** Known for deeply integrating GSAP timelines with Headless CMS data. Bumper B’s native Lenis integration accommodates this narrative-driven, scroll-scrubbing architecture.
-- **The 2D Distortion Elite (Merci-Michel, Dogstudio, MakeMePulse, Prototype Studio):** Historically reliant on Vue/Nuxt and PixiJS for ultra-optimized 2D liquid effects, Bumper B allows Next.js teams to achieve this exact aesthetic using R3F custom fragment shaders on standard 2D planes.
-- **The Immersive Vanguard (ActiveTheory, UNIT9):** When a project demands a purely gamified, WebGL-only experience, Bumper B's "DOM Sandwich" mode can be pushed to its limits, stripping away all HTML UI and letting the `<GlobalCanvas>` operate as a standalone game engine.
-- **The Smooth Scroll Purists (Studio Freight):** Creators of Lenis. Bumper B honors their legacy by using Lenis as the default native scroll controller, ensuring buttery-smooth inertia when in DOM-to-Canvas mode.
+### 5. Scrolling (`src/providers/SmoothScrollProvider.tsx`)
 
-### The Developers
+- **Smooth scroll:** Lenis runs on every page and publishes progress and velocity to the store.
+- **Route changes:** scroll jumps to the top through Lenis (`immediate`), so Lenis's own position stays in sync.
+- **Scroll lock:** when `isScrollLocked` is true, Lenis stops and the body gets `overflow: hidden`. The lock works, but no page turns it on yet (see *Not built yet*).
 
-Bumper B provides the technical foundation to execute the signature styles of elite independent developers and technical directors:
+### 6. Preloader (`src/components/ui/Preloader.tsx`)
 
-- **Aristide Benoist (The Vanilla Perfectionist):** Known for absolute mechanical precision, custom scroll inertia, and "invisible" WebGL. Bumper B’s strict Zustand scroll-locking and custom `lerp` math loops allow developers to recreate his incredibly tactile, friction-perfect interactions.
-- **Stefan Vitasović (The Framework Innovator):** As seen at 14islands, Stefan proves that wild WebGL can exist inside strict React ecosystems. Bumper B utilizes his philosophy: abstracting complex Three.js logic into declarative R3F components that interface cleanly with global state.
-- **Greg Lallé (The Cinematic Master):** Renowned for unlocking narrative sequences and pixel-sorting shaders triggered by precise scroll positions. Bumper B’s architecture allows developers to map Lenis scroll progress directly to shader `uniforms` inside the `useFrame` loop, enabling Greg's signature cinematic pacing.
+The full-screen counter waits for the WebGL textures (drei's `useProgress`) and the fonts (`document.fonts.ready`). It never waits longer than 3 seconds. When it finishes, it sets `isLoading` to false, which starts the hero title animation.
 
----
+- **Why the cap:** most textures are only for hover effects, and on a slow connection they can take tens of seconds. They keep loading in the background.
+- **Backstop:** `ClunkyReveal` reveals the title on its own after 6 seconds.
 
-## 🚀 Routing Paradigm Example
+## Pages
 
-Bumper B handles the shift between these strategies at the route level:
+| Route | File | Sections |
+| --- | --- | --- |
+| `/` | `src/app/page.tsx` | Featured Works list → liner-notes text with a `FocusImage` (two viewports tall) → video block → footer |
+| `/work` | `src/app/work/page.tsx` | ARCHIVE title reveal → project archive grid (hover glitch via `SingletonGlitch`) → footer |
+| `/work/[slug]` | `src/app/work/[slug]/page.tsx` | Title, metadata row, hero image, the challenge as a liner-notes passage, gallery, Next Project link → footer |
+| `/about` | `src/app/about/page.tsx` | ABOUT title reveal → studio statement → capabilities index → image → footer |
 
-1. User visits `/work`. The `SmoothScrollProvider` starts Lenis. The layout is standard CSS. Images use **DOM-to-Canvas Sync** to render subtle liquid ripples on hover.
-2. User clicks "Immersive Archive". They route to `/archive`.
-3. The `Archive` component mounts. It triggers `setScrollLocked(true)` in Zustand.
-4. Lenis instantly halts. The CSS body locks.
-5. `<tunnel.In>` teleports the custom math engine into the background canvas.
-6. The user is now inside the **DOM Sandwich**, navigating via a custom hijacked wheel event with mechanical, clunky snapping and perfectly aligned CSS masking walls.
+**Shared on every page** (`src/app/layout.tsx`):
+- **Chrome:** the preloader, the canvas, the nav HUD and slide-out menu, and the film grain.
+- **Navigation:** page changes use `next-view-transitions`, and project links add a "paper push" animation (`src/utils/animations.ts`).
+
+## Design system
+
+**Type scale** (`src/app/globals.css`), as Tailwind utilities:
+
+| Utility | Size | Used for |
+| --- | --- | --- |
+| `type-micro` | 11px | nav, metadata, notes, captions |
+| `type-label` | 11px caps | section labels |
+| `type-heading` | 7vw → 3vw | index rows and names |
+| `type-display` | 8.4vw → 4.4vw | paragraphs set as display type |
+
+**Fonts** are loaded once in the layout with `next/font`:
+- Neue Montreal → `font-neue`.
+- NB International → `font-sans`, the body default.
+
+**Shared pieces:**
+- `NavBar` (`src/components/ui/NavBar.tsx`): the HUD.
+  - Left: logo and links.
+  - Right: the page's metadata, set with `useHud(title, lines)`.
+  - Menu: `StairsMenu` opens from the HUD and closes with Escape.
+- `Label` (`src/components/ui/Label.tsx`): the ● section label.
+- `LinerNotes` (`src/components/sections/LinerNotes.tsx`): display paragraphs.
+  - Words brighten as they are read.
+  - A label or margin note sits in each first-line indent.
+  - Linked phrases swap the note on hover.
+- `RevealFooter` (`src/components/ui/RevealFooter.tsx`): the page slides up to uncover a footer pinned underneath.
+- `StickyHeroReveal` + `ClunkyReveal`: the big title that springs in letter by letter (ARCHIVE, ABOUT).
+
+## Content
+
+| Content | Where | Notes |
+| --- | --- | --- |
+| Work archive list | `src/data/projects.ts` | 11 projects |
+| Project page details | `PROJECT_DB` in `src/app/work/[slug]/page.tsx` | An unknown slug falls back to Native Instruments |
+| Featured Works list | `FEATURED` in `src/components/sections/FeaturedWorks.tsx` | |
+| Home and About copy | in each page file | |
+
+**All copy and project details are placeholder.**
+
+## Not built yet
+
+**An immersive, scroll-locked WebGL route.** A route where the canvas takes over the layout and handles its own input, with HTML only as framing. The pieces it would use exist:
+- The scroll lock in the store and `SmoothScrollProvider`.
+- The tunnel.
+
+But no route uses them, and nothing locks or unlocks scrolling per route. The earlier "DOM Sandwich" and `/archive` design described this; it isn't implemented.
+
+## Unused code
+
+These are in the repo but no page uses them:
+
+- **Sections:**
+  - `HorizontalGLParallaxBlock` and its scene `HorizontalGLParallaxScene`
+  - `InfiniteParallaxHero`
+  - `ProjectShowcase`
+  - `WorksIndex`: a typographic project list with a `FocusImage` beside it
+- **WebGL:** `WebGLScene`, `FluidWatermark`
+- **UI:** `GlitchImage`
+- **Motion:** `MagneticWrapper`, `HardwareParallax`, `KineticTypography`, `ParallaxImage`, `VelocityMarquee`
+- **Packages:**
+  - `gsap`: only `WebGLScene` imports it.
+  - `@vimeo/player`: nothing imports it.
+- **Assets:**
+  - `public/assets/fonts` and `public/assets/videos` duplicate `public/fonts` and `public/videos`; only `public/assets/images` is referenced.
+  - `public/videos/showcase-reel-1…6.mp4` are only used by `InfiniteParallaxHero`.
+
+## Known issues
+
+- **Lint:** `npm run lint` reports 18 problems (10 errors, 8 warnings), all in older files: `any` types, `setState` inside effects, and mutating hook values that the React Compiler rules flag. `next build` does not run ESLint, so it still passes.
+- **Every-frame rendering:** the canvas renders every frame on every page, including pages with no WebGL.
