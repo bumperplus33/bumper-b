@@ -1,13 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import {
-  motion,
-  MotionValue,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-} from "framer-motion";
+import { motion, MotionValue, useScroll, useTransform } from "framer-motion";
 import { Link } from "next-view-transitions";
 import Label from "@/components/ui/Label";
 
@@ -45,12 +39,16 @@ function Word({
 }) {
   const start = (index / total) * 0.9;
   const opacity = useTransform(progress, [start, start + 0.1], [DIM, 1]);
-  return <motion.span style={{ opacity }}>{word}</motion.span>;
+  // .liner-word: under reduced motion, CSS shows every word at full opacity
+  return (
+    <motion.span className="liner-word" style={{ opacity }}>
+      {word}
+    </motion.span>
+  );
 }
 
 function PassageBlock({ passage }: { passage: Passage }) {
   const ref = useRef<HTMLDivElement>(null);
-  const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start 0.85", "end 0.55"],
@@ -75,16 +73,12 @@ function PassageBlock({ passage }: { passage: Passage }) {
       return (
         <span key={index}>
           {i > 0 && " "}
-          {reduceMotion ? (
-            word
-          ) : (
-            <Word
-              word={word}
-              index={index}
-              total={total}
-              progress={scrollYProgress}
-            />
-          )}
+          <Word
+            word={word}
+            index={index}
+            total={total}
+            progress={scrollYProgress}
+          />
         </span>
       );
     });

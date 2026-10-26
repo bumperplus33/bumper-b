@@ -39,6 +39,7 @@ The canvas renders on demand (`frameloop="demand"`), so it only draws when somet
 - **Each scene** keeps requesting frames while it animates, and stops once it is still:
   - `FocusImage`: while its box moves, a dissolve runs or the scroll bend eases out.
   - `SingletonGlitch`: from hover until the glitch fades.
+  - `LiquidTitle`: the whole time the hero is on screen, since its blob always drifts. Under reduced motion the blob holds still, so it only draws while the pointer blob settles.
 - **Resizing the canvas** clears it, so a size change also requests a frame.
 
 With nothing moving, the canvas draws no frames at all. A scene that animates over time must call `invalidate()` from its `useFrame` while it is still changing, and cap `delta`: the first frame after a pause sees the whole pause as its delta.
@@ -48,6 +49,10 @@ With nothing moving, the canvas draws no frames at all. A scene that animates ov
 `src/providers/TunnelProvider.ts` exports one tunnel. A component anywhere in the page renders its scene inside `<tunnel.In>`, and the canvas renders everything that arrives at `<tunnel.Out />`. Page code can own its WebGL without the canvas knowing about it.
 
 In use:
+- `LiquidTitle`: Home's hero (`LiquidHero`).
+  - A milky metaball blob with drifting holes, plus a smaller blob that follows the pointer and swells while pressed.
+  - The wordmark inverts where it crosses the blob, and melts and slices near its edges and with scroll speed.
+  - Text source: every `[data-gl-text]` element in the hero is drawn into a 2D canvas at its exact DOM position, and that canvas is the shader's text texture. The layout stays in CSS, and the DOM text stays as the accessible title and the no-WebGL fallback.
 - `FocusImage`: the small image in Home's liner notes.
 - `SingletonGlitch`: the hover glitch on the Work archive cards.
 
@@ -94,7 +99,7 @@ The full-screen counter waits for the WebGL textures (drei's `useProgress`) and 
 
 | Route | File | Sections |
 | --- | --- | --- |
-| `/` | `src/app/page.tsx` | Featured Works list → liner-notes text with a `FocusImage` (two viewports tall) → video block → footer |
+| `/` | `src/app/page.tsx` | Liquid hero (`LiquidHero`) → Featured Works list → liner-notes text with a `FocusImage` (two viewports tall) → video block → footer |
 | `/work` | `src/app/work/page.tsx` | ARCHIVE title reveal → project archive grid (hover glitch via `SingletonGlitch`) → footer |
 | `/work/[slug]` | `src/app/work/[slug]/page.tsx` | Title, metadata row, hero image, the challenge as a liner-notes passage, gallery, Next Project link → footer |
 | `/about` | `src/app/about/page.tsx` | ABOUT title reveal → studio statement → capabilities index → image → footer |

@@ -141,7 +141,7 @@ function FocusMesh({
     if (!dom || !mesh || !uniforms) return;
 
     const rect = dom.getBoundingClientRect();
-    const offscreen = rect.bottom < 0 || rect.top > size.height;
+    const offscreen = rect.bottom <= 0 || rect.top >= size.height;
     mesh.visible = !offscreen && rect.width > 0;
     if (!mesh.visible) return;
 
