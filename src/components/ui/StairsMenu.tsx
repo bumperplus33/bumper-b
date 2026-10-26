@@ -4,7 +4,7 @@ import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useTransitionRouter } from "next-view-transitions";
 import { usePathname } from "next/navigation";
 import { triggerPaperPushTransition } from "@/utils/animations";
-import React from "react";
+import React, { useEffect } from "react";
 
 const heightAnim: Variants = {
   initial: { height: "0dvh" },
@@ -56,6 +56,16 @@ export default function StairsMenu({
 }) {
   const router = useTransitionRouter();
   const pathname = usePathname();
+
+  // Escape closes the menu while it's open
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeMenu();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, closeMenu]);
 
   const handleNavigation =
     (path: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
