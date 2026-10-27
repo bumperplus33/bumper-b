@@ -3,8 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, useSpring, useMotionValue } from "framer-motion";
 import Image from "next/image";
-import { useTransitionRouter } from "next-view-transitions";
-import { triggerPaperPushTransition } from "@/utils/animations"; // <-- Import
+import { usePageTransition } from "@/providers/PageTransitionProvider";
 
 const FEATURED = [
   {
@@ -100,7 +99,7 @@ export default function FeaturedWorks() {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const floatingImageRef = useRef<HTMLDivElement>(null);
-  const router = useTransitionRouter();
+  const { navigate } = usePageTransition();
 
   // 1. Core target values (Raw JS numbers, skipping React State)
   const targetX = useMotionValue(0);
@@ -167,9 +166,7 @@ export default function FeaturedWorks() {
   const handleNavigation =
     (path: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();
-      router.push(path, {
-        onTransitionReady: () => triggerPaperPushTransition(),
-      });
+      navigate(path);
     };
 
   return (

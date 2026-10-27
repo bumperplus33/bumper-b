@@ -6,8 +6,8 @@ import { usePathname } from "next/navigation";
 import StairsMenu from "@/components/ui/StairsMenu";
 import { useStore } from "@/store/useStore";
 
-// Using next-view-transitions to ensure a seamless, app-like crossfade
-import { Link } from "next-view-transitions";
+// Links go through the typographic page transition
+import Link from "@/components/ui/TransitionLink";
 
 const LINKS = [
   { title: "Work", href: "/work" },

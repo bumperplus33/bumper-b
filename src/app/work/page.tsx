@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { useTransitionRouter } from "next-view-transitions";
-import { triggerPaperPushTransition } from "@/utils/animations";
+import { usePageTransition } from "@/providers/PageTransitionProvider";
 
 import RevealFooter from "@/components/ui/RevealFooter";
 import StickyHeroReveal from "@/components/sections/StickyHeroReveal";
@@ -18,14 +17,12 @@ export default function WorkGallery() {
     `${PROJECTS.length} projects`,
     "2021—2023",
   ]);
-  const router = useTransitionRouter();
+  const { navigate } = usePageTransition();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const handleProjectClick = (e: React.MouseEvent, slug: string) => {
     e.preventDefault();
-    router.push(`/work/${slug}`, {
-      onTransitionReady: () => triggerPaperPushTransition(),
-    });
+    navigate(`/work/${slug}`);
   };
 
   const isCinematicMode = hoveredIndex !== null;

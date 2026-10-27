@@ -1,9 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence, Variants } from "framer-motion";
-import { useTransitionRouter } from "next-view-transitions";
 import { usePathname } from "next/navigation";
-import { triggerPaperPushTransition } from "@/utils/animations";
+import { usePageTransition } from "@/providers/PageTransitionProvider";
 import React, { useEffect } from "react";
 
 // Timeline. Open: the panels rise, then the rules draw in and the type
@@ -104,7 +103,7 @@ export default function StairsMenu({
   isOpen: boolean;
   closeMenu: () => void;
 }) {
-  const router = useTransitionRouter();
+  const { navigate } = usePageTransition();
   const pathname = usePathname();
 
   // Escape closes the menu while it's open
@@ -124,12 +123,9 @@ export default function StairsMenu({
         closeMenu();
         return;
       }
+      // The transition's curtain rises over the closing menu
       closeMenu();
-      setTimeout(() => {
-        router.push(path, {
-          onTransitionReady: () => triggerPaperPushTransition(),
-        });
-      }, 600);
+      navigate(path);
     };
 
   return (

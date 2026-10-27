@@ -9,8 +9,7 @@ import {
   useMotionValue,
   useSpring,
 } from "framer-motion";
-import { useTransitionRouter } from "next-view-transitions";
-import { triggerPaperPushTransition } from "@/utils/animations";
+import { usePageTransition } from "@/providers/PageTransitionProvider";
 
 import RevealFooter from "@/components/ui/RevealFooter";
 import LinerNotes from "@/components/sections/LinerNotes";
@@ -254,7 +253,7 @@ export default function CaseStudy({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = use(params);
-  const router = useTransitionRouter();
+  const { navigate } = usePageTransition();
   const { scrollYProgress } = useScroll();
 
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
@@ -294,14 +293,7 @@ export default function CaseStudy({
 
   const handleNavigation = (e: React.MouseEvent, targetSlug: string) => {
     e.preventDefault();
-    if (typeof triggerPaperPushTransition === "function")
-      triggerPaperPushTransition();
-
-    setTimeout(() => {
-      router.push(`/work/${targetSlug}`, {
-        onTransitionReady: () => triggerPaperPushTransition(),
-      });
-    }, 400);
+    navigate(`/work/${targetSlug}`);
   };
 
   return (
