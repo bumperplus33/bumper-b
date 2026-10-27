@@ -6,10 +6,13 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useReducedMotion } from "framer-motion";
 import { tunnel } from "@/providers/TunnelProvider";
 import { useStore } from "@/store/useStore";
+import { STIR, STIR_LIFETIME, StirTrail, type StirStroke } from "./StirTrail";
 
 // A liquid hero: a soft milky blob drifts behind the title, a smaller one
 // follows the pointer and swells while pressed, and the type inverts where
-// it crosses the blob and melts and slices near its edges.
+// it crosses the blob and melts and slices near its edges. Moving the
+// pointer leaves stir marks (see StirTrail) that smear the type, thicken the
+// liquid, and heal after a few seconds.
 //
 // The title stays in the DOM (for layout, screen readers and a fallback).
 // Every element marked [data-gl-text] inside the hero is drawn into a 2D
@@ -29,7 +32,10 @@ const fragmentShader = `
   uniform vec2 uSize;
   uniform float uTime;
   uniform vec3 uPointer;
+  uniform vec2 uPointerPrev;
   uniform float uPress;
+  uniform sampler2D uTrail;
+  uniform float uTrailOn;
   uniform float uVelocity;
   varying vec2 vUv;
 
@@ -64,6 +70,14 @@ const fragmentShader = `
     return r * r / max(dot(d, d), 1e-4);
   }
 
+  // A ball stretched along the segment a-b, so a fast-moving one stays whole
+  float capsule(vec2 p, vec2 a, vec2 b, float r) {
+    vec2 ab = b - a;
+    float t = clamp(dot(p - a, ab) / max(dot(ab, ab), 1e-8), 0.0, 1.0);
+    vec2 d = p - a - ab * t;
+    return r * r / max(dot(d, d), 1e-4);
+  }
+
   // Metaball field in aspect-correct space: 1.0 is the blob's edge
   float field(vec2 uv) {
     float aspect = uSize.x / uSize.y;
@@ -79,8 +93,10 @@ const fragmentShader = `
     f += ball(p, c + vec2(sin(t * 0.5 + 2.1) * 0.18 * aspect, sin(t * 0.9 + 0.7) * 0.24), 0.17 * k);
     f += ball(p, c + vec2(cos(t * 1.2 + 4.0) * 0.3 * aspect, cos(t * 0.6 + 2.5) * 0.12), 0.13 * k);
 
+    // The pointer blob covers its whole path since last frame
     vec2 pointer = vec2(uPointer.x * aspect, uPointer.y);
-    f += uPointer.z * ball(p, pointer, (0.11 + 0.09 * uPress) * k);
+    vec2 pointerPrev = vec2(uPointerPrev.x * aspect, uPointerPrev.y);
+    f += uPointer.z * capsule(p, pointerPrev, pointer, (0.11 + 0.09 * uPress) * k);
 
     // Two drifting holes, so the blob loops around itself like a ring
     vec2 h1 = c + vec2(sin(t * 0.9 + 0.5) * 0.12 * aspect, cos(t * 0.7) * 0.1) - p;
@@ -92,6 +108,9 @@ const fragmentShader = `
 
     // Organic edges, and smaller holes where the noise dips
     f *= 0.45 + 1.1 * fbm(p * 2.4 + vec2(t * 0.9, -t * 0.6));
+
+    // Stir marks thicken the liquid
+    f += uTrailOn * texture2D(uTrail, uv).g * 0.9;
     return f;
   }
 
@@ -110,7 +129,15 @@ const fragmentShader = `
     float slice = (hash(vec2(row, tick)) - 0.5) * 0.035 * (edge * 0.7 + abs(uVelocity) * 1.5);
     slice *= step(0.72, hash(vec2(row * 1.7, tick)));
 
-    float text = texture2D(uText, vUv + warp + vec2(slice, 0.0)).r;
+    // Stir marks drag the type along the stroke and ruffle it across it
+    vec4 trail = texture2D(uTrail, vUv) * uTrailOn;
+    float heat = trail.r;
+    float stir = trail.g;
+    vec2 dir = trail.ba * 2.0 - 1.0;
+    vec2 across = vec2(-dir.y, dir.x);
+    vec2 smear = (dir * 0.018 + across * (noise(vUv * uSize / 18.0) - 0.5) * 0.03) * stir;
+
+    float text = texture2D(uText, vUv + warp + smear + vec2(slice, 0.0)).r;
 
     // Blurred, milky blob on near-black, and type that inverts across it
     float blob = smoothstep(0.75, 1.45, f);
@@ -118,6 +145,10 @@ const fragmentShader = `
     vec3 milk = vec3(0.92, 0.92, 0.9);
     vec3 base = mix(ink, milk, blob);
     vec3 col = abs(base - vec3(text * 0.96));
+
+    // A thin inverted rim where a fresh stroke is cooling
+    float rim = smoothstep(0.08, 0.35, heat) * (1.0 - smoothstep(0.45, 0.9, heat));
+    col = mix(col, vec3(1.0) - col, rim * 0.4);
 
     // Fine grain, so the soft gradients don't band
     col += (hash(vUv * uSize + fract(uTime)) - 0.5) * 0.035;
@@ -130,6 +161,8 @@ interface PointerState {
   y: number;
   inside: boolean;
   pressed: boolean;
+  // A pointer is over the page (a mouse, or a finger that is down)
+  present: boolean;
 }
 
 function LiquidMesh({
@@ -152,9 +185,14 @@ function LiquidMesh({
     y: 0,
     inside: false,
     pressed: false,
+    present: false,
   });
   const reduceMotion = useReducedMotion();
-  const { size, viewport, invalidate } = useThree();
+  const { gl, size, viewport, invalidate } = useThree();
+  const trailRef = useRef<StirTrail | null>(null);
+  // The pointer's last position in hero UV, for the stroke since last frame
+  const lastStroke = useRef({ point: new THREE.Vector2(), valid: false });
+  const lastPaint = useRef(-Infinity);
 
   const initialUniforms = useMemo(
     () => ({
@@ -162,11 +200,25 @@ function LiquidMesh({
       uSize: { value: new THREE.Vector2(1, 1) },
       uTime: { value: 0 },
       uPointer: { value: new THREE.Vector3(0.5, 0.5, 0) },
+      uPointerPrev: { value: new THREE.Vector2(0.5, 0.5) },
       uPress: { value: 0 },
+      uTrail: { value: null as THREE.Texture | null },
+      uTrailOn: { value: 0 },
       uVelocity: { value: 0 },
     }),
     [],
   );
+
+  // No stir marks with reduced motion
+  useEffect(() => {
+    if (reduceMotion) return;
+    const trail = new StirTrail(gl);
+    trailRef.current = trail;
+    return () => {
+      trailRef.current = null;
+      trail.dispose();
+    };
+  }, [gl, reduceMotion]);
 
   // Redraw the text texture when the hero resizes or the fonts arrive
   useEffect(() => {
@@ -187,6 +239,7 @@ function LiquidMesh({
     const move = (e: PointerEvent) => {
       pointer.current.x = e.clientX;
       pointer.current.y = e.clientY;
+      pointer.current.present = true;
       const rect = domRef.current?.getBoundingClientRect();
       pointer.current.inside =
         !!rect &&
@@ -200,13 +253,16 @@ function LiquidMesh({
       move(e);
       pointer.current.pressed = pointer.current.inside;
     };
-    const up = () => {
+    const up = (e: PointerEvent) => {
       pointer.current.pressed = false;
+      // A finger that lifts is gone; a mouse stays where it is
+      if (e.pointerType !== "mouse") pointer.current.present = false;
       invalidate();
     };
     const leave = () => {
       pointer.current.inside = false;
       pointer.current.pressed = false;
+      pointer.current.present = false;
       invalidate();
     };
     window.addEventListener("pointermove", move, { passive: true });
@@ -258,6 +314,7 @@ function LiquidMesh({
     const px = (p.x - rect.left) / rect.width;
     const py = 1 - (p.y - rect.top) / rect.height;
     const pu = uniforms.uPointer.value as THREE.Vector3;
+    (uniforms.uPointerPrev.value as THREE.Vector2).set(pu.x, pu.y);
     const ease = 1 - Math.pow(0.0015, step);
     pu.x += (px - pu.x) * ease;
     pu.y += (py - pu.y) * ease;
@@ -270,6 +327,45 @@ function LiquidMesh({
       : THREE.MathUtils.clamp(useStore.getState().scrollVelocity / 40, -1, 1);
     uniforms.uVelocity.value += (velocity - uniforms.uVelocity.value) * 0.1;
     uniforms.uSize.value.set(rect.width, rect.height);
+
+    // Stir marks: paint the pointer's path across the hero since last frame.
+    // The path is measured in hero UV, so a still pointer over a scrolling
+    // page stirs too.
+    const trail = trailRef.current;
+    if (trail) {
+      trail.resize(rect.width, rect.height);
+      const last = lastStroke.current;
+      const over =
+        p.present && px >= 0 && px <= 1 && py >= 0 && py <= 1 && step > 0;
+      let stroke: StirStroke | null = null;
+      if (over && last.valid) {
+        const dx = (px - last.point.x) * rect.width;
+        const dy = (py - last.point.y) * rect.height;
+        const length = Math.hypot(dx, dy);
+        // A jump (the pointer re-entering elsewhere) isn't a stroke
+        if (length > 0.5 && length < rect.height * 0.5) {
+          stroke = {
+            a: last.point,
+            b: new THREE.Vector2(px, py),
+            deposit:
+              Math.min(length / step / STIR.fullSpeed, 1) *
+              (1 + 0.6 * uniforms.uPress.value),
+            press: uniforms.uPress.value,
+          };
+          lastPaint.current = uniforms.uTime.value;
+        }
+      }
+      // Only run the simulation while there are marks left to heal
+      if (stroke || uniforms.uTime.value - lastPaint.current < STIR_LIFETIME) {
+        trail.step(gl, step, stroke);
+      }
+      last.point.set(px, py);
+      last.valid = over;
+      uniforms.uTrail.value = trail.texture;
+      uniforms.uTrailOn.value = 1;
+    } else {
+      uniforms.uTrailOn.value = 0;
+    }
 
     // DOM-to-canvas sync: match the plane to the hero on screen
     const width = (rect.width / size.width) * viewport.width;
