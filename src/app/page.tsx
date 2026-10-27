@@ -14,10 +14,10 @@ import { useHud } from "@/hooks/useHud";
 // Placeholder copy: swap in the studio's own words.
 const PASSAGES: Passage[] = [
   {
-    label: "SOJU",
+    label: "Bumper",
     indent: "50%",
     segments: [
-      "Digital creative studio working where code turns into material. SOJU builds sites, tools and moving pictures for people who make things: instruments, rings, glasses, shoes. Small by design, the studio is known for one thing above all: work that feels made by hand, even when it runs on the GPU.",
+      "Digital creative studio working where code turns into material. Bumper builds sites, tools and moving pictures for people who make things: instruments, rings, glasses, shoes. Small by design, the studio is known for one thing above all: work that feels made by hand, even when it runs on the GPU.",
     ],
   },
   {

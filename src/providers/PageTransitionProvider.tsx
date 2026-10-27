@@ -185,7 +185,7 @@ export default function PageTransitionProvider({
               <span className="block w-[7px] h-[7px] rounded-full bg-zinc-950" />
               {state.kind}
             </p>
-            <p className="type-micro">SOJU® Studio</p>
+            <p className="type-micro">Bumper® Studio</p>
           </div>
 
           <div className="flex flex-wrap justify-center gap-x-[0.22em] font-neue uppercase text-center text-[min(15vw,16vh)] md:text-[min(10vw,18vh)] leading-[0.86] tracking-[-0.03em]">

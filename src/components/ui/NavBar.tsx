@@ -57,7 +57,7 @@ export default function NavBar() {
             href="/"
             className="font-neue text-sm leading-none uppercase tracking-tight"
           >
-            SOJU®
+            Bumper®
           </Link>
 
           <ul className="hidden md:flex gap-16">

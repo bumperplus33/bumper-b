@@ -26,7 +26,7 @@ const nbInternational = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "SOJU Studio",
+  title: "Bumper Studio",
   description:
     "Digital creative studio blurring the line between technology and art.",
 };

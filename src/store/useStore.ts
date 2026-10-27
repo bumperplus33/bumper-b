@@ -26,7 +26,7 @@ export interface HudMeta {
 }
 
 export const DEFAULT_HUD: HudMeta = {
-  title: "SOJU Studio",
+  title: "Bumper Studio",
   lines: ["Digital creative studio", "Technology / Art", "Index 2021—2026"],
 };
 

@@ -107,8 +107,7 @@ export default function Preloader() {
           transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1], delay: 0.05 }}
           className="text-xs font-bold tracking-[0.4em] uppercase text-zinc-500"
         >
-          {/* 3. THE FIX: Updated the old branding to match the new SOJU identity */}
-          SOJU Initializing
+          Bumper Initializing
         </motion.p>
       </div>
     </motion.div>

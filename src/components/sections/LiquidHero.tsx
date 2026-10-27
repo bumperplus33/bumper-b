@@ -6,7 +6,7 @@ import Label from "@/components/ui/Label";
 import Link from "@/components/ui/TransitionLink";
 import { PROJECTS } from "@/data/projects";
 
-// The Home hero: the SOJU wordmark, set twice, over a liquid WebGL blob.
+// The Home hero: the BUMPER wordmark, set twice, over a liquid WebGL blob.
 // The DOM text is the layout, the accessible title and the fallback; the
 // shader draws every [data-gl-text] element at the same place, then hides
 // the DOM copy once it's on screen.
@@ -15,7 +15,7 @@ import { PROJECTS } from "@/data/projects";
 // in a strip below the box, outside the canvas, where it stays ordinary
 // HTML: hoverable, focusable and readable without WebGL.
 
-const LOCKUP = ["SOJU®", "Studio"];
+const LOCKUP = ["Bumper®", "Studio"];
 
 export default function LiquidHero() {
   const glRef = useRef<HTMLDivElement>(null);
@@ -30,7 +30,7 @@ export default function LiquidHero() {
         ref={glRef}
         className="relative flex-1 flex flex-col justify-between items-center text-center px-5 md:px-8 pt-[14vh] pb-[5vh]"
       >
-        <h1 aria-label="SOJU Studio">
+        <h1 aria-label="Bumper Studio">
           {LOCKUP.map((line) => (
             <span key={line} className="block">
               <span data-gl-text className={`inline-block ${lineClass}`}>
