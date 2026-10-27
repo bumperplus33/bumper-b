@@ -5,13 +5,13 @@ simulation, contact-sheet work grid, velocity-driven sound, compressed
 textures). Each item says what it is, where it lands in the codebase, how to
 build it, and when it is done.
 
-| #   | Item                              | Size   | Depends on | Status  |
-| --- | --------------------------------- | ------ | ---------- | ------- |
-| 1   | Paint along segments              | Small  | —          | Planned |
-| 2   | Scroll-advected stir trail        | Medium | 1          | Planned |
-| 3   | Contact-sheet grid for /work      | Medium | —          | Planned |
-| 4   | Sound tied to Sequencer velocity  | Small  | —          | Planned |
-| 5   | KTX2 textures                     | Medium | Growth     | Deferred |
+| #   | Item                             | Size   | Depends on | Status   |
+| --- | -------------------------------- | ------ | ---------- | -------- |
+| 1   | Paint along segments             | Small  | —          | Planned  |
+| 2   | Scroll-advected stir trail       | Medium | 1          | Planned  |
+| 3   | Contact-sheet grid for /work     | Medium | —          | Planned  |
+| 4   | Sound tied to Sequencer velocity | Small  | —          | Planned  |
+| 5   | KTX2 textures                    | Medium | Growth     | Deferred |
 
 Order: 1 → 2 is one thread of work on the hero; 3 and 4 are independent and
 can run in parallel; 5 waits until the image count makes it worth it.
@@ -28,6 +28,7 @@ fast swipe reads as one continuous stroke.
 block and the `ball()` term in the fragment shader).
 
 **How.**
+
 - Keep the previous eased pointer position (`uPointerPrev`) alongside
   `uPointer`.
 - In the shader, replace the point distance for the pointer blob with the
@@ -48,12 +49,14 @@ stay attached to the type as the page scrolls and slowly heal. It gives the
 "Move to stir — press to swell" caption a memory.
 
 **Where.**
+
 - New `src/components/webgl/StirTrail.ts`: the simulation (render targets,
   sim material, `step()`).
 - `src/components/webgl/LiquidTitle.tsx`: owns a `StirTrail`, feeds it the
   pointer segment and scroll delta, samples it in the composite shader.
 
 **How.**
+
 - **Ping-pong feedback buffer.** Two half-float render targets, about 512²
   (1024² on large screens), swapped each frame. Channels:
   - R = heat (fast decay, drives the bright/wet edge)
@@ -94,6 +97,7 @@ under the pointer (a spotlight). It fits the HUD's "record sleeve credits"
 style.
 
 **Where.**
+
 - `src/data/projects.ts`: add `frames: string[]` per project (the hero image
   plus 2–4 more). Until real assets exist, extend
   `scripts/placeholder-variations.py` to generate them.
@@ -101,6 +105,7 @@ style.
 - Possibly a new `src/components/sections/ContactSheet.tsx`.
 
 **How.**
+
 - A dense grid (6 columns desktop, 2 mobile) built from the existing gutters;
   projects flow continuously so one project's frames can wrap rows.
 - Frame headers in `type-micro`: project name on frame 1, index number on
@@ -125,6 +130,7 @@ CLS on /work stays at 0.
 follow drag/flick speed. Muted by default, with a saved toggle.
 
 **Where.**
+
 - New `src/hooks/useSound.ts` (or `src/audio/`): Web Audio context, loading,
   mute state.
 - `src/store/useStore.ts`: `soundOn` flag.
@@ -135,6 +141,7 @@ follow drag/flick speed. Muted by default, with a saved toggle.
 - `public/sound/`: one short loop (hum) and one tick, both small (<100KB).
 
 **How.**
+
 - Create the `AudioContext` only on the first user gesture that turns sound
   on (autoplay policy).
 - Hum: a looping `AudioBufferSourceNode` → `GainNode`. Each frame, ramp
@@ -161,6 +168,7 @@ compressed and decode in a worker.
 justify the pipeline.
 
 **How (when triggered).**
+
 - Encode with `toktx` (KTX-Software) in a script next to
   `placeholder-variations.py`; output to `public/textures/`.
 - Copy the Basis transcoder into `public/basis/`.
