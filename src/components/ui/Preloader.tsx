@@ -11,6 +11,60 @@ import { useProgress } from "@react-three/drei";
 // shouldn't wait on them.
 const MAX_WAIT_MS = 3000;
 
+// The counter's digits sit in three fixed slots, so its box never changes
+// size and no digit's box moves as the number grows (a centred "9%" becoming
+// "10%" would shift on every step and count against CLS). Everything that
+// does move is a transform, which isn't a layout shift: shorter numbers are
+// re-centred as a whole, and each digit is centred in its slot by its own
+// width. Tabular digits would avoid that table, but this font's tabular "1"
+// is a different, serifed glyph.
+const SLOTS = 3;
+const SLOT_EM = 0.62;
+// Neue Montreal Bold's digit widths, in em
+const DIGIT_EM: Record<string, number> = {
+  "0": 0.68,
+  "1": 0.39,
+  "2": 0.6,
+  "3": 0.62,
+  "4": 0.64,
+  "5": 0.62,
+  "6": 0.64,
+  "7": 0.54,
+  "8": 0.64,
+  "9": 0.64,
+};
+
+function Counter({ value }: { value: number }) {
+  const digits = String(value);
+  const empty = SLOTS - digits.length;
+  return (
+    <span
+      className="inline-flex"
+      style={{ transform: `translateX(${(-empty * SLOT_EM) / 2}em)` }}
+    >
+      {Array.from({ length: SLOTS }, (_, i) => {
+        const digit = digits[i - empty] ?? "";
+        const offset = digit ? (SLOT_EM - DIGIT_EM[digit]) / 2 : 0;
+        return (
+          <span
+            key={i}
+            className="inline-block whitespace-nowrap"
+            style={{ width: `${SLOT_EM}em` }}
+          >
+            <span
+              className="inline-block"
+              style={{ transform: `translateX(${offset}em)` }}
+            >
+              {digit}
+            </span>
+          </span>
+        );
+      })}
+      %
+    </span>
+  );
+}
+
 export default function Preloader() {
   const isLoading = useStore((state) => state.isLoading);
   const setIsLoading = useStore((state) => state.setIsLoading);
@@ -94,10 +148,9 @@ export default function Preloader() {
         <motion.span
           animate={{ y: isLoading ? "0%" : "-120%" }}
           transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
-          // 2. THE FIX: Injected the custom font class into the massive percentage text
           className="block text-[22vw] leading-[0.75] tracking-tighter uppercase font-black pr-[0.05em] font-neue"
         >
-          {displayProgress}%
+          <Counter value={displayProgress} />
         </motion.span>
       </div>
 
