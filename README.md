@@ -202,7 +202,15 @@ The one immersive route: the page doesn't scroll, and the WebGL canvas lays out 
   - The page has an `sr-only` heading and a live region announcing each project.
   - A click zone sized like the centre card holds the DOM image, shown until the textures load and as the fallback without WebGL.
 - **Scroll lock:** set when the route mounts and cleared when it unmounts.
-- **Reduced motion:** cards jump straight to the target, without the bend or colour split.
+- **Sound** (`src/audio/SequencerSound.ts`): optional, off by default, toggled by "Sound off / on" in the bottom bar.
+  - Synthesised with Web Audio, so there are no audio files.
+    - **Hum:** two detuned saws and a sub sine through a lowpass. Its pitch (up to 1.5 octaves), brightness and level follow the cards' speed, which `SequencerScene` reports through `onSpeed`.
+    - **Tick:** a short blip each time a card crosses the centre.
+  - The setting (`soundOn` in the store) is saved in `localStorage` under `bumper:sound`.
+  - Browsers only start audio from a gesture. The toggle's click starts it, or, when the setting was saved as on, the visitor's first press or key.
+  - Audio suspends while the tab is hidden and closes when the route unmounts.
+  - Tunables are in `SOUND`.
+- **Reduced motion:** cards jump straight to the target, without the bend or colour split. Ticks still play, and the hum stays at rest.
 
 ## Roadmap
 
