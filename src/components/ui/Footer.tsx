@@ -10,21 +10,21 @@ export default function Footer() {
           ========================================= */}
       {/* THE FIX: Replaced absolute positioning with standard flex flow and minimal pt-8 to lock it flush to the ceiling */}
       <div className="w-full px-5 md:px-8 pt-5 flex justify-between items-start type-micro text-zinc-500 dark:text-zinc-400 relative z-10">
-        <p>This is SOJU studio.</p>
+        <p>This is Bumper studio.</p>
         <Link
-          href="mailto:hello@soju.studio"
+          href="mailto:hello@bumper.studio"
           className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
         >
-          hello@soju.studio
+          hello@bumper.studio
         </Link>
       </div>
 
       {/* =========================================
-          CENTER: The Massive SOJU Graphic
+          CENTER: The Massive BUMPER Graphic
           ========================================= */}
       <div className="flex-grow flex items-center justify-center w-full">
-        <div className="text-[25vw] leading-[0.75] tracking-tighter uppercase text-zinc-900 dark:text-zinc-100 transition-colors duration-500 font-neue">
-          SOJU
+        <div className="text-[16vw] leading-[0.75] tracking-tighter uppercase text-zinc-900 dark:text-zinc-100 transition-colors duration-500 font-neue">
+          Bumper
         </div>
       </div>
 

@@ -2,7 +2,7 @@ import { PROJECTS } from "@/data/projects";
 
 // The name a route goes by in the page transition's title.
 export function routeLabel(pathname: string) {
-  if (pathname === "/") return "SOJU®";
+  if (pathname === "/") return "Bumper®";
   if (pathname === "/work") return "Archive";
   if (pathname === "/about") return "About";
   if (pathname === "/sequencer") return "Sequencer";
@@ -10,7 +10,7 @@ export function routeLabel(pathname: string) {
   if (project) {
     return PROJECTS.find((p) => p.slug === project[1])?.name ?? "Project";
   }
-  return "SOJU®";
+  return "Bumper®";
 }
 
 // The small label above the title

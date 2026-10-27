@@ -1,6 +1,6 @@
 # Bumper B
 
-The site for **SOJU**, a digital creative studio, built with Next.js and React Three Fiber.
+The site for **Bumper**, a digital creative studio, built with Next.js and React Three Fiber.
 
 The pages are ordinary HTML laid out with Tailwind, and a single WebGL canvas behind them adds a few image effects that follow DOM elements on screen. The look is type-first: a small text HUD, big display paragraphs, and small WebGL images rather than full-screen 3D.
 

@@ -269,10 +269,10 @@ export default function StairsMenu({
             className="relative z-10 w-full flex justify-between items-end px-5 md:px-8 pb-5 type-micro text-zinc-900 pointer-events-auto"
           >
             <a
-              href="mailto:hello@soju.studio"
+              href="mailto:hello@bumper.studio"
               className="hover:opacity-60 transition-opacity"
             >
-              hello@soju.studio
+              hello@bumper.studio
             </a>
             <div className="flex gap-6">
               {["Instagram", "Twitter", "LinkedIn"].map((name) => (
