@@ -93,12 +93,14 @@ function Cards({
   reduceMotion,
   onActive,
   onReady,
+  onSpeed,
 }: {
   sources: string[];
   controlRef: React.RefObject<SequencerControl>;
   reduceMotion: boolean;
   onActive: (index: number) => void;
   onReady: () => void;
+  onSpeed?: (cardsPerSecond: number) => void;
 }) {
   const textures = useTexture(sources, (loaded) => {
     for (const t of [loaded].flat()) t.colorSpace = THREE.SRGBColorSpace;
@@ -143,6 +145,7 @@ function Cards({
     // Speed in cards per second drives the bend and the colour split
     const speed = (c.current - previous) / Math.max(step, 1e-3);
     const velocity = reduceMotion ? 0 : THREE.MathUtils.clamp(speed / 6, -1, 1);
+    onSpeed?.(speed);
     const s = state.current;
     s.velocity += (velocity - s.velocity) * 0.2;
     if (Math.abs(s.velocity) < 0.0005) s.velocity = 0;
@@ -217,6 +220,7 @@ export default function SequencerScene(props: {
   reduceMotion: boolean;
   onActive: (index: number) => void;
   onReady: () => void;
+  onSpeed?: (cardsPerSecond: number) => void;
 }) {
   return (
     <tunnel.In>

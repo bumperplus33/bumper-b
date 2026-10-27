@@ -10,7 +10,7 @@ build it, and when it is done.
 | 1   | Paint along segments             | Small  | —          | Done     |
 | 2   | Scroll-advected stir trail       | Medium | 1          | Done     |
 | 3   | Contact-sheet grid for /work     | Medium | —          | Partial  |
-| 4   | Sound tied to Sequencer velocity | Small  | —          | Planned  |
+| 4   | Sound tied to Sequencer velocity | Small  | —          | Done     |
 | 5   | KTX2 textures                    | Medium | Growth     | Deferred |
 
 Order: 1 → 2 is one thread of work on the hero; 3 and 4 are independent and
@@ -135,6 +135,11 @@ CLS on /work stays at 0.
 
 **What.** An optional hum or tick in the Sequencer whose pitch and volume
 follow drag/flick speed. Muted by default, with a saved toggle.
+
+**As built.** Both voices are synthesised with Web Audio
+(`src/audio/SequencerSound.ts`) instead of loading audio files. That means no
+assets, no licensing, and every parameter can be tuned in `SOUND`. Speed
+comes from an `onSpeed` callback on `SequencerScene`.
 
 **Where.**
 

@@ -18,6 +18,21 @@ interface AppState {
   // 4. HUD: the metadata block in the top-right corner, set per page
   hud: HudMeta;
   setHud: (hud: HudMeta) => void;
+
+  // 5. SOUND: off until the visitor turns it on; saved in localStorage
+  soundOn: boolean;
+  setSoundOn: (on: boolean) => void;
+}
+
+const SOUND_KEY = "bumper:sound";
+
+// Read the saved sound setting. Call after mount: the server can't see it.
+export function loadSoundSetting() {
+  try {
+    useStore.setState({ soundOn: localStorage.getItem(SOUND_KEY) === "on" });
+  } catch {
+    // Storage blocked: stay muted
+  }
 }
 
 export interface HudMeta {
@@ -44,4 +59,14 @@ export const useStore = create<AppState>((set) => ({
 
   hud: DEFAULT_HUD,
   setHud: (hud) => set({ hud }),
+
+  soundOn: false,
+  setSoundOn: (on) => {
+    set({ soundOn: on });
+    try {
+      localStorage.setItem(SOUND_KEY, on ? "on" : "off");
+    } catch {
+      // Storage blocked: the setting lasts for this visit only
+    }
+  },
 }));

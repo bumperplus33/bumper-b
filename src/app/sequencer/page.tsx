@@ -16,13 +16,15 @@ import SequencerScene, {
 import Label from "@/components/ui/Label";
 import { PROJECTS } from "@/data/projects";
 import { useHud } from "@/hooks/useHud";
-import { useStore } from "@/store/useStore";
+import { loadSoundSetting, useStore } from "@/store/useStore";
+import { SequencerSound } from "@/audio/SequencerSound";
 
 // The immersive route. The page doesn't scroll: the scroll lock stops Lenis
 // and the body, the canvas lays out every project as a card in an endless
 // loop, and this page turns wheel, drag, keys and the step buttons into a
 // target card. HTML only frames it: the HUD, the active project's details,
-// the steps and a click zone over the centre card.
+// the steps and a click zone over the centre card. An optional sound (off by
+// default) hums with the cards' speed and ticks as each one passes.
 
 const N = PROJECTS.length;
 const SOURCES = PROJECTS.map((project) => project.src);
@@ -40,6 +42,8 @@ export default function SequencerPage() {
   const [active, setActive] = useState(0);
   const [glReady, setGlReady] = useState(false);
   const activeRef = useRef(0);
+  const soundOn = useStore((state) => state.soundOn);
+  const sound = useRef<SequencerSound | null>(null);
   const drag = useRef({
     down: false,
     moved: false,
@@ -64,10 +68,50 @@ export default function SequencerPage() {
     return () => setScrollLocked(false);
   }, []);
 
+  // Sound: one synth for the route's lifetime, silent until turned on
+  useEffect(() => {
+    const synth = new SequencerSound();
+    sound.current = synth;
+    loadSoundSetting();
+    const onVisibility = () =>
+      synth.setVisible(document.visibilityState === "visible");
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      sound.current = null;
+      synth.dispose();
+    };
+  }, []);
+
+  // Audio can only start from a gesture: the toggle's click, or, when the
+  // setting was saved as on, the visitor's first press or key
+  useEffect(() => {
+    const synth = sound.current;
+    if (!synth) return;
+    if (!soundOn) {
+      synth.disable();
+      return;
+    }
+    synth.enable();
+    const unlock = () => synth.enable();
+    window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("keydown", unlock, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+  }, [soundOn]);
+
   const handleActive = useCallback((index: number) => {
+    if (index !== activeRef.current) sound.current?.tick();
     activeRef.current = index;
     setActive(index);
   }, []);
+  // A jump under reduced motion isn't a swing, so the hum stays at rest
+  const handleSpeed = useCallback(
+    (speed: number) => sound.current?.setSpeed(reduceMotion ? 0 : speed),
+    [reduceMotion],
+  );
   const handleReady = useCallback(() => setGlReady(true), []);
 
   const go = useCallback((delta: number) => {
@@ -218,6 +262,7 @@ export default function SequencerPage() {
         reduceMotion={reduceMotion}
         onActive={handleActive}
         onReady={handleReady}
+        onSpeed={handleSpeed}
       />
 
       {/* The HTML frame sits above the canvas (z-40) */}
@@ -284,6 +329,29 @@ export default function SequencerPage() {
 
           {/* Open and hint */}
           <div className="col-span-12 md:col-span-3 md:text-right type-micro flex md:flex-col justify-between md:items-end gap-1">
+            <button
+              type="button"
+              data-no-drag
+              aria-pressed={soundOn}
+              onClick={() => {
+                // Start the audio inside the click itself (Safari insists)
+                if (!soundOn) sound.current?.enable();
+                useStore.getState().setSoundOn(!soundOn);
+              }}
+              className="pointer-events-auto flex items-center gap-2 text-zinc-400 hover:text-zinc-100 transition-colors cursor-pointer"
+            >
+              {/* Three bars that stand up while the sound is on */}
+              <span aria-hidden className="flex items-end gap-[2px] h-[9px]">
+                {[0.5, 1, 0.7].map((h, i) => (
+                  <span
+                    key={i}
+                    className={`block w-[2px] bg-current transition-[height] duration-300 ${soundOn ? "" : "!h-[2px]"}`}
+                    style={{ height: `${h * 9}px` }}
+                  />
+                ))}
+              </span>
+              Sound {soundOn ? "on" : "off"}
+            </button>
             <button
               type="button"
               data-no-drag
