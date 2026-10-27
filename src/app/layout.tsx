@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import SmoothScrollProvider from "@/providers/SmoothScrollProvider";
-import { ViewTransitions } from "next-view-transitions";
 import localFont from "next/font/local";
 
 import Preloader from "@/components/ui/Preloader";
 import NavBar from "@/components/ui/NavBar";
 import FilmGrain from "@/components/ui/FilmGrain";
+import PageTransitionProvider from "@/providers/PageTransitionProvider";
 import GlobalCanvas from "@/components/webgl/GlobalCanvas";
 
 // The only place fonts are loaded. globals.css maps these variables to the
@@ -37,25 +37,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ViewTransitions>
-      {/* The font variables go on <html> because the theme reads them at :root */}
-      <html
-        lang="en"
-        className={`dark ${neueMontreal.variable} ${nbInternational.variable}`}
-      >
-        <body className="bg-zinc-950 text-zinc-100 antialiased selection:bg-accent selection:text-zinc-950">
-          <Preloader />
+    // The font variables go on <html> because the theme reads them at :root
+    <html
+      lang="en"
+      className={`dark ${neueMontreal.variable} ${nbInternational.variable}`}
+    >
+      <body className="bg-zinc-950 text-zinc-100 antialiased selection:bg-accent selection:text-zinc-950">
+        <Preloader />
 
-          {/* The singleton canvas: page scenes teleport into it through tunnel.In */}
-          <GlobalCanvas />
+        {/* The singleton canvas: page scenes teleport into it through tunnel.In */}
+        <GlobalCanvas />
 
-          {/* Shared chrome lives here so it survives route changes */}
+        {/* Shared chrome lives here so it survives route changes. Page
+              transitions wrap it all, so every link can use them. */}
+        <PageTransitionProvider>
           <NavBar />
           <FilmGrain />
 
           <SmoothScrollProvider>{children}</SmoothScrollProvider>
-        </body>
-      </html>
-    </ViewTransitions>
+        </PageTransitionProvider>
+      </body>
+    </html>
   );
 }

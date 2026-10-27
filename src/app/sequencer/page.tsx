@@ -4,8 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useReducedMotion } from "framer-motion";
 import { invalidate } from "@react-three/fiber";
-import { useTransitionRouter } from "next-view-transitions";
-import { triggerPaperPushTransition } from "@/utils/animations";
+import { usePageTransition } from "@/providers/PageTransitionProvider";
 import SequencerScene, {
   CARD_ASPECT,
   CARD_CENTER_Y,
@@ -35,7 +34,7 @@ const WHEEL_PX_PER_CARD = 300;
 const WHEEL_SNAP_THRESHOLD = 0.15;
 
 export default function SequencerPage() {
-  const router = useTransitionRouter();
+  const { navigate } = usePageTransition();
   const reduceMotion = useReducedMotion() ?? false;
   const control = useRef<SequencerControl>({ target: 0, current: 0 });
   const [active, setActive] = useState(0);
@@ -89,12 +88,8 @@ export default function SequencerPage() {
   }, []);
 
   const open = useCallback(
-    (index: number) => {
-      router.push(`/work/${PROJECTS[index].slug}`, {
-        onTransitionReady: () => triggerPaperPushTransition(),
-      });
-    },
-    [router],
+    (index: number) => navigate(`/work/${PROJECTS[index].slug}`),
+    [navigate],
   );
 
   // Wheel and trackpad: move freely, then settle on a card when it stops

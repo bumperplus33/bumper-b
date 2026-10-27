@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { motion, MotionValue, useScroll, useTransform } from "framer-motion";
-import { Link } from "next-view-transitions";
+import Link from "@/components/ui/TransitionLink";
 import Label from "@/components/ui/Label";
 
 // Editorial passages in the style of a record's liner notes: big type that

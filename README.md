@@ -18,7 +18,7 @@ npm run lint
 - Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4
 - React Three Fiber 9, drei, three
 - Lenis for smooth scrolling, Framer Motion for DOM animation, Zustand for shared state
-- `next-view-transitions` for page transitions, `tunnel-rat` for sending scenes into the canvas
+- `tunnel-rat` for sending scenes into the canvas
 
 ## Architecture
 
@@ -108,7 +108,20 @@ The full-screen counter waits for the WebGL textures (drei's `useProgress`) and 
 
 **Shared on every page** (`src/app/layout.tsx`):
 - **Chrome:** the preloader, the canvas, the nav HUD and slide-out menu, and the film grain.
-- **Navigation:** page changes use `next-view-transitions`, and project links add a "paper push" animation (`src/utils/animations.ts`).
+- **Navigation:** every internal link goes through the page transition (below).
+
+### Page transitions
+
+`src/providers/PageTransitionProvider.tsx` runs a typographic curtain for every navigation. Use `TransitionLink` (`src/components/ui/TransitionLink.tsx`) for links, or `usePageTransition().navigate(href)` from code.
+
+1. **Cover:** a light curtain slides up and the destination's name (`routeLabel` in `src/utils/routeLabel.ts`) rises into it, letter by letter.
+2. **Wait:** the router navigates only once the screen is covered. The curtain waits for the new route however long it takes, and shows "Loading…" after 1.2s.
+3. **Reveal:** once the new route has rendered and painted, the letters lift out and the curtain slides away.
+
+Rules:
+- **Safety cap:** after 12s the curtain lifts anyway, so it can never trap anyone.
+- **No curtain for:** same-page links, modified clicks (new tab or window), and reduced motion (links navigate directly).
+- **Why not View Transitions:** the site used to use the browser's View Transitions API (`next-view-transitions`). It freezes the page while the next route renders, and gives up after about four seconds with `TimeoutError: Transition was aborted because of timeout in DOM update`. That happened on slow connections and on first visits to a route in `next dev`.
 
 ## Design system
 
