@@ -194,6 +194,10 @@ The one immersive route: the page doesn't scroll, and the WebGL canvas lays out 
 - **Scroll lock:** set when the route mounts and cleared when it unmounts.
 - **Reduced motion:** cards jump straight to the target, without the bend or colour split.
 
+## Roadmap
+
+Planned work (stir trail, contact-sheet Archive, Sequencer sound, KTX2 textures) is in [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md).
+
 ## Removed code
 
 Components, packages and assets that no page used were removed in one cleanup commit. They can be restored from git history if needed:
