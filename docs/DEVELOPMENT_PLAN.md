@@ -7,9 +7,9 @@ build it, and when it is done.
 
 | #   | Item                             | Size   | Depends on | Status   |
 | --- | -------------------------------- | ------ | ---------- | -------- |
-| 1   | Paint along segments             | Small  | —          | Planned  |
-| 2   | Scroll-advected stir trail       | Medium | 1          | Planned  |
-| 3   | Contact-sheet grid for /work     | Medium | —          | Planned  |
+| 1   | Paint along segments             | Small  | —          | Done     |
+| 2   | Scroll-advected stir trail       | Medium | 1          | Done     |
+| 3   | Contact-sheet grid for /work     | Medium | —          | Partial  |
 | 4   | Sound tied to Sequencer velocity | Small  | —          | Planned  |
 | 5   | KTX2 textures                    | Medium | Growth     | Deferred |
 
@@ -54,6 +54,11 @@ stay attached to the type as the page scrolls and slowly heal. It gives the
   sim material, `step()`).
 - `src/components/webgl/LiquidTitle.tsx`: owns a `StirTrail`, feeds it the
   pointer segment and scroll delta, samples it in the composite shader.
+
+**As built.** The buffer is laid out over the hero rather than the screen,
+which makes scroll advection exact for free: the marks are pinned to the type.
+Scrolling still stirs, because a still pointer moves across the hero as the
+page scrolls under it. Tunables live in `STIR` in `StirTrail.ts`.
 
 **How.**
 
@@ -115,8 +120,10 @@ style.
 - Clicking any frame navigates via `usePageTransition().navigate`.
 - Keep `useHud("Archive", …)`; add the hovered project's role/location to
   the HUD lines while hovering.
-- Keep or drop the current cinematic hover and `SingletonGlitch`: decide at
-  review (they compete with the spotlight).
+- ~~Keep or drop the current cinematic hover and `SingletonGlitch`~~:
+  dropped. The spotlight hover (mouse and keyboard, HUD credits, frame
+  headers with name and number) has shipped on the existing grid; the
+  numbered frame runs per project are still to do.
 
 **Done when.** All projects show as frame runs, the spotlight works with mouse
 and keyboard, images are `next/image` with correct `sizes`, and Lighthouse
@@ -173,7 +180,7 @@ justify the pipeline.
   `placeholder-variations.py`; output to `public/textures/`.
 - Copy the Basis transcoder into `public/basis/`.
 - Swap `useTexture` for drei's `useKTX2` in `SequencerScene.tsx`,
-  `FocusImage.tsx` and `SingletonGlitch.tsx`, keeping JPEGs for the DOM
+  `FocusImage.tsx`, keeping JPEGs for the DOM
   `next/image` paths.
 - Check colour space (`SRGBColorSpace`) and flipY match the JPEG versions.
 

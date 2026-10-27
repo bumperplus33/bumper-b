@@ -15,6 +15,7 @@ npm run lint
 ```
 
 **Stack:**
+
 - Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4
 - React Three Fiber 9, drei, three
 - Lenis for smooth scrolling, Framer Motion for DOM animation, Zustand for shared state
@@ -27,10 +28,12 @@ npm run lint
 `<GlobalCanvas />` (`src/components/webgl/GlobalCanvas.tsx`) is rendered once in `src/app/layout.tsx`. It is fixed full-screen at `z-[40]` with `pointer-events: none`, so it sits over the page without blocking clicks. It listens for pointer events on `document.body`.
 
 **What survives a page change:**
+
 - The canvas and its WebGL context.
 - drei's texture cache, so an image already loaded as a texture isn't fetched again.
 
 **What doesn't:**
+
 - The scenes. Each scene belongs to the page that renders it, so its meshes and materials are created when the page mounts and removed when it unmounts.
 
 The canvas renders on demand (`frameloop="demand"`), so it only draws when something has changed:
@@ -38,8 +41,7 @@ The canvas renders on demand (`frameloop="demand"`), so it only draws when somet
 - **Scrolling and resizing** request a frame, because they move the DOM boxes the scenes follow. They only do this when a page has sent a scene into the canvas, so About never draws.
 - **Each scene** keeps requesting frames while it animates, and stops once it is still:
   - `FocusImage`: while its box moves, a dissolve runs or the scroll bend eases out.
-  - `SingletonGlitch`: from hover until the glitch fades.
-  - `LiquidTitle`: the whole time the hero is on screen, since its blob always drifts. Under reduced motion the blob holds still, so it only draws while the pointer blob settles.
+  - `LiquidTitle`: the whole time the hero is on screen, since its blob always drifts. Its stir-trail simulation only runs while marks are left to heal. Under reduced motion the blob holds still, so it only draws while the pointer blob settles.
 - **Resizing the canvas** clears it, so a size change also requests a frame.
 
 With nothing moving, the canvas draws no frames at all. A scene that animates over time must call `invalidate()` from its `useFrame` while it is still changing, and cap `delta`: the first frame after a pause sees the whole pause as its delta.
@@ -49,17 +51,19 @@ With nothing moving, the canvas draws no frames at all. A scene that animates ov
 `src/providers/TunnelProvider.ts` exports one tunnel. A component anywhere in the page renders its scene inside `<tunnel.In>`, and the canvas renders everything that arrives at `<tunnel.Out />`. Page code can own its WebGL without the canvas knowing about it.
 
 In use:
+
 - `SequencerScene`: the Sequencer route's full-screen card loop (see below).
 - `LiquidTitle`: Home's hero (`LiquidHero`).
   - A milky metaball blob with drifting holes, plus a smaller blob that follows the pointer and swells while pressed.
   - The wordmark inverts where it crosses the blob, and melts and slices near its edges and with scroll speed.
+  - Stir marks (`StirTrail.ts`): a ping-pong feedback buffer laid over the hero records heat, stir and stroke direction along the pointer's path each frame. The marks smear the type along the stroke, thicken the liquid, and heal in about 3s. They are pinned to the type as the page scrolls. The pointer blob is a capsule spanning its path since the last frame, so fast moves stay whole. No marks under reduced motion.
   - Text source: every `[data-gl-text]` element in the hero is drawn into a 2D canvas at its exact DOM position, and that canvas is the shader's text texture. The layout stays in CSS, and the DOM text stays as the accessible title and the no-WebGL fallback.
 - `FocusImage`: the small image in Home's liner notes.
-- `SingletonGlitch`: the hover glitch on the Work archive cards.
 
 ### 3. DOM-to-canvas sync
 
 Both WebGL components follow the same pattern:
+
 1. Render an ordinary DOM box with an `<img>` inside it.
 2. Every frame, measure the box with `getBoundingClientRect()`.
 3. Move and scale a plane in the canvas to cover it exactly.
@@ -67,6 +71,7 @@ Both WebGL components follow the same pattern:
 The layout stays in CSS and works at any screen size. The DOM image is the fallback while textures load or if WebGL is unavailable.
 
 `FocusImage` (`src/components/webgl/FocusImage.tsx`):
+
 - Bends the plane and splits its colour channels with scroll speed.
 - Dissolves between pictures when its `index` prop changes.
 - Turns motion off under `prefers-reduced-motion`.
@@ -75,13 +80,13 @@ The layout stays in CSS and works at any screen size. The DOM image is the fallb
 
 A Zustand store holds what several components need:
 
-| State | Set by | Read by |
-| --- | --- | --- |
-| `isLoading` | `Preloader` | `Preloader`, `ClunkyReveal` (hero title reveal) |
+| State            | Set by                                        | Read by                                                                                     |
+| ---------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `isLoading`      | `Preloader`                                   | `Preloader`, `ClunkyReveal` (hero title reveal)                                             |
 | `scrollVelocity` | `SmoothScrollProvider`, on every Lenis scroll | `FocusImage`, inside its render loop via `getState()`, so scrolling doesn't re-render React |
-| `scrollProgress` | `SmoothScrollProvider`, on every Lenis scroll | nothing yet; available for scroll-driven effects |
-| `hud` | pages, through `useHud()` | `NavBar` (the metadata in the top-right corner) |
-| `isScrollLocked` | the Sequencer route, while it's mounted | `SmoothScrollProvider`, `NavBar` (never hides the HUD while locked) |
+| `scrollProgress` | `SmoothScrollProvider`, on every Lenis scroll | nothing yet; available for scroll-driven effects                                            |
+| `hud`            | pages, through `useHud()`                     | `NavBar` (the metadata in the top-right corner)                                             |
+| `isScrollLocked` | the Sequencer route, while it's mounted       | `SmoothScrollProvider`, `NavBar` (never hides the HUD while locked)                         |
 
 ### 5. Scrolling (`src/providers/SmoothScrollProvider.tsx`)
 
@@ -98,15 +103,16 @@ The full-screen counter waits for the WebGL textures (drei's `useProgress`) and 
 
 ## Pages
 
-| Route | File | Sections |
-| --- | --- | --- |
-| `/` | `src/app/page.tsx` | Liquid hero (`LiquidHero`) → Featured Works list → liner-notes text with a `FocusImage` (two viewports tall) → video block → footer |
-| `/work` | `src/app/work/page.tsx` | ARCHIVE title reveal → project archive grid (hover glitch via `SingletonGlitch`) → footer |
-| `/work/[slug]` | `src/app/work/[slug]/page.tsx` | Title, metadata row, hero image, the challenge as a liner-notes passage, gallery, Next Project link → footer |
-| `/sequencer` | `src/app/sequencer/page.tsx` | Immersive, scroll-locked project browser (see below) |
-| `/about` | `src/app/about/page.tsx` | ABOUT title reveal → studio statement → capabilities index → image → footer |
+| Route          | File                           | Sections                                                                                                                                           |
+| -------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`            | `src/app/page.tsx`             | Liquid hero (`LiquidHero`) → Featured Works list → liner-notes text with a `FocusImage` (two viewports tall) → video block → footer                |
+| `/work`        | `src/app/work/page.tsx`        | ARCHIVE title reveal → project archive grid (spotlight hover: other projects dim, the HUD shows the hovered or focused project's credits) → footer |
+| `/work/[slug]` | `src/app/work/[slug]/page.tsx` | Title, metadata row, hero image, the challenge as a liner-notes passage, gallery, Next Project link → footer                                       |
+| `/sequencer`   | `src/app/sequencer/page.tsx`   | Immersive, scroll-locked project browser (see below)                                                                                               |
+| `/about`       | `src/app/about/page.tsx`       | ABOUT title reveal → studio statement → capabilities index → image → footer                                                                        |
 
 **Shared on every page** (`src/app/layout.tsx`):
+
 - **Chrome:** the preloader, the canvas, the nav HUD and slide-out menu, and the film grain.
 - **Navigation:** every internal link goes through the page transition (below).
 
@@ -119,6 +125,7 @@ The full-screen counter waits for the WebGL textures (drei's `useProgress`) and 
 3. **Reveal:** once the new route has rendered and painted, the letters lift out and the curtain slides away.
 
 Rules:
+
 - **Safety cap:** after 12s the curtain lifts anyway, so it can never trap anyone.
 - **No curtain for:** same-page links, modified clicks (new tab or window), and reduced motion (links navigate directly).
 - **Why not View Transitions:** the site used to use the browser's View Transitions API (`next-view-transitions`). It freezes the page while the next route renders, and gives up after about four seconds with `TimeoutError: Transition was aborted because of timeout in DOM update`. That happened on slow connections and on first visits to a route in `next dev`.
@@ -127,18 +134,20 @@ Rules:
 
 **Type scale** (`src/app/globals.css`), as Tailwind utilities:
 
-| Utility | Size | Used for |
-| --- | --- | --- |
-| `type-micro` | 11px | nav, metadata, notes, captions |
-| `type-label` | 11px caps | section labels |
-| `type-heading` | 7vw → 3vw | index rows and names |
+| Utility        | Size          | Used for                       |
+| -------------- | ------------- | ------------------------------ |
+| `type-micro`   | 11px          | nav, metadata, notes, captions |
+| `type-label`   | 11px caps     | section labels                 |
+| `type-heading` | 7vw → 3vw     | index rows and names           |
 | `type-display` | 8.4vw → 4.4vw | paragraphs set as display type |
 
 **Fonts** are loaded once in the layout with `next/font`:
+
 - Neue Montreal → `font-neue`.
 - NB International → `font-sans`, the body default.
 
 **Shared pieces:**
+
 - `NavBar` (`src/components/ui/NavBar.tsx`): the HUD.
   - Left: logo and links.
   - Right: the page's metadata, set with `useHud(title, lines)`.
@@ -153,17 +162,18 @@ Rules:
 
 ## Content
 
-| Content | Where | Notes |
-| --- | --- | --- |
-| Work archive list | `src/data/projects.ts` | 11 projects |
-| Project page details | `PROJECT_DB` in `src/app/work/[slug]/page.tsx` | An unknown slug falls back to Native Instruments |
-| Featured Works list | `FEATURED` in `src/components/sections/FeaturedWorks.tsx` | |
-| Home and About copy | in each page file | |
-| Images | `public/images/project-*.jpg`, `video-poster.jpg`, `public/assets/images/image_*.webp` | See below |
+| Content              | Where                                                                                  | Notes                                            |
+| -------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Work archive list    | `src/data/projects.ts`                                                                 | 11 projects                                      |
+| Project page details | `PROJECT_DB` in `src/app/work/[slug]/page.tsx`                                         | An unknown slug falls back to Native Instruments |
+| Featured Works list  | `FEATURED` in `src/components/sections/FeaturedWorks.tsx`                              |                                                  |
+| Home and About copy  | in each page file                                                                      |                                                  |
+| Images               | `public/images/project-*.jpg`, `video-poster.jpg`, `public/assets/images/image_*.webp` | See below                                        |
 
 **All copy, project details and images are placeholder.**
 
 **Placeholder images:**
+
 - Every image on the site is a variation of one black-and-white photo, made by `scripts/placeholder-variations.py`.
 - Each variation is a crop with its own tone treatment (contrast, matte, low key, high key), sometimes mirrored, plus fine grain.
 - The script writes them under the file names the code already uses, so real images can replace them one file at a time.
