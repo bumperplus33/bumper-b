@@ -128,8 +128,9 @@ style.
 plus the three gallery images its project page already showed, now stored
 once as `gallery` in `projects.ts` and read by both pages. Only a project's
 first frame is a tab stop (labelled with its name, role and location), so
-the keyboard moves project by project. The sheet adds no layout shift; the
-small CLS on /work comes from the Preloader's counter on every page.
+the keyboard moves project by project. The sheet adds no layout shift. The
+Preloader's counter used to add about 0.095 to every page's CLS; its digits
+now sit in fixed slots, which brings /work to about 0.0002.
 
 **Done when.** All projects show as frame runs, the spotlight works with mouse
 and keyboard, images are `next/image` with correct `sizes`, and Lighthouse
