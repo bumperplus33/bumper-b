@@ -103,13 +103,13 @@ The full-screen counter waits for the WebGL textures (drei's `useProgress`) and 
 
 ## Pages
 
-| Route          | File                           | Sections                                                                                                                                           |
-| -------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`            | `src/app/page.tsx`             | Liquid hero (`LiquidHero`) → Featured Works list → liner-notes text with a `FocusImage` (two viewports tall) → video block → footer                |
-| `/work`        | `src/app/work/page.tsx`        | ARCHIVE title reveal → project archive grid (spotlight hover: other projects dim, the HUD shows the hovered or focused project's credits) → footer |
-| `/work/[slug]` | `src/app/work/[slug]/page.tsx` | Title, metadata row, hero image, the challenge as a liner-notes passage, gallery, Next Project link → footer                                       |
-| `/sequencer`   | `src/app/sequencer/page.tsx`   | Immersive, scroll-locked project browser (see below)                                                                                               |
-| `/about`       | `src/app/about/page.tsx`       | ABOUT title reveal → studio statement → capabilities index → image → footer                                                                        |
+| Route          | File                           | Sections                                                                                                                                                                                                                                |
+| -------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`            | `src/app/page.tsx`             | Liquid hero (`LiquidHero`) → Featured Works list → liner-notes text with a `FocusImage` (two viewports tall) → video block → footer                                                                                                     |
+| `/work`        | `src/app/work/page.tsx`        | ARCHIVE title reveal → contact sheet: each project is a run of numbered frames (cover, then gallery) that wraps across rows; hovering or focusing any frame lights its project, dims the rest and shows its credits in the HUD → footer |
+| `/work/[slug]` | `src/app/work/[slug]/page.tsx` | Title, metadata row, hero image, the challenge as a liner-notes passage, gallery, Next Project link → footer                                                                                                                            |
+| `/sequencer`   | `src/app/sequencer/page.tsx`   | Immersive, scroll-locked project browser (see below)                                                                                                                                                                                    |
+| `/about`       | `src/app/about/page.tsx`       | ABOUT title reveal → studio statement → capabilities index → image → footer                                                                                                                                                             |
 
 **Shared on every page** (`src/app/layout.tsx`):
 
@@ -162,13 +162,13 @@ Rules:
 
 ## Content
 
-| Content              | Where                                                                                  | Notes                                            |
-| -------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| Work archive list    | `src/data/projects.ts`                                                                 | 11 projects                                      |
-| Project page details | `PROJECT_DB` in `src/app/work/[slug]/page.tsx`                                         | An unknown slug falls back to Native Instruments |
-| Featured Works list  | `FEATURED` in `src/components/sections/FeaturedWorks.tsx`                              |                                                  |
-| Home and About copy  | in each page file                                                                      |                                                  |
-| Images               | `public/images/project-*.jpg`, `video-poster.jpg`, `public/assets/images/image_*.webp` | See below                                        |
+| Content              | Where                                                                                  | Notes                                                                                                      |
+| -------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Work archive list    | `src/data/projects.ts`                                                                 | 11 projects; `src` is the cover, `gallery` the project page's images and the rest of its contact-sheet run |
+| Project page details | `PROJECT_DB` in `src/app/work/[slug]/page.tsx`                                         | An unknown slug falls back to Native Instruments                                                           |
+| Featured Works list  | `FEATURED` in `src/components/sections/FeaturedWorks.tsx`                              |                                                                                                            |
+| Home and About copy  | in each page file                                                                      |                                                                                                            |
+| Images               | `public/images/project-*.jpg`, `video-poster.jpg`, `public/assets/images/image_*.webp` | See below                                                                                                  |
 
 **All copy, project details and images are placeholder.**
 

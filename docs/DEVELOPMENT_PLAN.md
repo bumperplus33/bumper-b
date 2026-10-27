@@ -9,7 +9,7 @@ build it, and when it is done.
 | --- | -------------------------------- | ------ | ---------- | -------- |
 | 1   | Paint along segments             | Small  | —          | Done     |
 | 2   | Scroll-advected stir trail       | Medium | 1          | Done     |
-| 3   | Contact-sheet grid for /work     | Medium | —          | Partial  |
+| 3   | Contact-sheet grid for /work     | Medium | —          | Done     |
 | 4   | Sound tied to Sequencer velocity | Small  | —          | Done     |
 | 5   | KTX2 textures                    | Medium | Growth     | Deferred |
 
@@ -122,8 +122,14 @@ style.
   the HUD lines while hovering.
 - ~~Keep or drop the current cinematic hover and `SingletonGlitch`~~:
   dropped. The spotlight hover (mouse and keyboard, HUD credits, frame
-  headers with name and number) has shipped on the existing grid; the
-  numbered frame runs per project are still to do.
+  headers with name and number) shipped first, then the frame runs.
+
+**As built.** No new images were needed: each project's run is its cover
+plus the three gallery images its project page already showed, now stored
+once as `gallery` in `projects.ts` and read by both pages. Only a project's
+first frame is a tab stop (labelled with its name, role and location), so
+the keyboard moves project by project. The sheet adds no layout shift; the
+small CLS on /work comes from the Preloader's counter on every page.
 
 **Done when.** All projects show as frame runs, the spotlight works with mouse
 and keyboard, images are `next/image` with correct `sizes`, and Lighthouse

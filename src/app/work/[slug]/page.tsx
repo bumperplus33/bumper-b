@@ -15,6 +15,7 @@ import RevealFooter from "@/components/ui/RevealFooter";
 import LinerNotes from "@/components/sections/LinerNotes";
 import Label from "@/components/ui/Label";
 import { useHud } from "@/hooks/useHud";
+import { PROJECTS } from "@/data/projects";
 
 // FULLY MAPPED SEQUENCE
 interface ProjectDetail {
@@ -24,7 +25,6 @@ interface ProjectDetail {
   timeline: string;
   location: string;
   heroImage: string;
-  images: string[];
   challenge: string;
   nextProject: { name: string; slug: string };
 }
@@ -37,11 +37,6 @@ const PROJECT_DB: Record<string, ProjectDetail> = {
     timeline: "Q3 2023",
     location: "Berlin, DE",
     heroImage: "/images/project-1.jpg",
-    images: [
-      "/images/project-2.jpg",
-      "/images/project-3.jpg",
-      "/images/project-4.jpg",
-    ],
     challenge:
       "Redefining the digital ecosystem for the world's leading provider of software and hardware for computer-based audio production.",
     nextProject: { name: "Oura", slug: "oura" },
@@ -53,11 +48,6 @@ const PROJECT_DB: Record<string, ProjectDetail> = {
     timeline: "Q2 2023",
     location: "Oulu, FI",
     heroImage: "/images/project-2.jpg",
-    images: [
-      "/images/project-5.jpg",
-      "/images/project-6.jpg",
-      "/images/project-7.jpg",
-    ],
     challenge:
       "Creating an immersive, hardware-focused narrative to launch the Generation 3 smart ring to a global audience.",
     nextProject: { name: "Hender Scheme", slug: "hender-scheme" },
@@ -69,11 +59,6 @@ const PROJECT_DB: Record<string, ProjectDetail> = {
     timeline: "Q1 2023",
     location: "Tokyo, JP",
     heroImage: "/images/project-3.jpg",
-    images: [
-      "/images/project-8.jpg",
-      "/images/project-1.jpg",
-      "/images/project-2.jpg",
-    ],
     challenge:
       "Translating the physical craftsmanship of premium Japanese leather goods into a tactile digital commerce experience.",
     nextProject: { name: "B&O Play", slug: "bo-play" },
@@ -85,11 +70,6 @@ const PROJECT_DB: Record<string, ProjectDetail> = {
     timeline: "Q4 2022",
     location: "Struer, DK",
     heroImage: "/images/project-4.jpg",
-    images: [
-      "/images/project-3.jpg",
-      "/images/project-5.jpg",
-      "/images/project-6.jpg",
-    ],
     challenge:
       "A sonic interaction study pushing the boundaries of WebGL audio visualization for premium acoustic hardware.",
     nextProject: { name: "Nothing", slug: "nothing" },
@@ -101,11 +81,6 @@ const PROJECT_DB: Record<string, ProjectDetail> = {
     timeline: "Q3 2022",
     location: "London, UK",
     heroImage: "/images/project-5.jpg",
-    images: [
-      "/images/project-7.jpg",
-      "/images/project-8.jpg",
-      "/images/project-1.jpg",
-    ],
     challenge:
       "Embracing radical transparency in both hardware engineering and digital interface architecture.",
     nextProject: { name: "Gentle Monster", slug: "gentle-monster" },
@@ -117,11 +92,6 @@ const PROJECT_DB: Record<string, ProjectDetail> = {
     timeline: "Q2 2022",
     location: "Seoul, KR",
     heroImage: "/images/project-6.jpg",
-    images: [
-      "/images/project-2.jpg",
-      "/images/project-4.jpg",
-      "/images/project-5.jpg",
-    ],
     challenge:
       "Designing an avant-garde digital flagship that matches the surreal, architectural brilliance of their physical retail spaces.",
     nextProject: { name: "Puma POV", slug: "puma-pov" },
@@ -133,11 +103,6 @@ const PROJECT_DB: Record<string, ProjectDetail> = {
     timeline: "Q1 2021",
     location: "Global",
     heroImage: "/images/project-7.jpg",
-    images: [
-      "/images/project-6.jpg",
-      "/images/project-8.jpg",
-      "/images/project-3.jpg",
-    ],
     challenge:
       "A high-velocity campaign hub built around kinetic typography and hardware-accelerated video transitions.",
     nextProject: { name: "Jaarvis Noir", slug: "jaarvis" },
@@ -149,11 +114,6 @@ const PROJECT_DB: Record<string, ProjectDetail> = {
     timeline: "Q4 2021",
     location: "Paris, FR",
     heroImage: "/images/project-8.jpg",
-    images: [
-      "/images/project-1.jpg",
-      "/images/project-5.jpg",
-      "/images/project-2.jpg",
-    ],
     challenge:
       "An exclusive, ephemeral digital invitation exploring themes of darkness, luxury, and brutalist typography.",
     nextProject: { name: "DPSC x Puma", slug: "dpsc-puma" },
@@ -167,11 +127,6 @@ const PROJECT_DB: Record<string, ProjectDetail> = {
     timeline: "Q3 2022",
     location: "Global",
     heroImage: "/images/project-3.jpg",
-    images: [
-      "/images/project-9.jpg",
-      "/images/project-11.jpg",
-      "/images/project-4.jpg",
-    ],
     challenge:
       "A creative concept pairing two visual languages in one capsule launch, told through bold colour and motion-led product storytelling.",
     nextProject: { name: "Grid 7 Years", slug: "grid-7-years" },
@@ -183,11 +138,6 @@ const PROJECT_DB: Record<string, ProjectDetail> = {
     timeline: "Q2 2022",
     location: "Berlin, DE",
     heroImage: "/images/project-4.jpg",
-    images: [
-      "/images/project-12.jpg",
-      "/images/project-9.jpg",
-      "/images/project-6.jpg",
-    ],
     challenge:
       "An anniversary piece marking seven years of work, set as an archive that rearranges itself on a strict typographic grid.",
     nextProject: { name: "Music Battle", slug: "puma-music" },
@@ -199,11 +149,6 @@ const PROJECT_DB: Record<string, ProjectDetail> = {
     timeline: "Q4 2021",
     location: "Global",
     heroImage: "/images/project-5.jpg",
-    images: [
-      "/images/project-11.jpg",
-      "/images/project-8.jpg",
-      "/images/project-7.jpg",
-    ],
     challenge:
       "A live music battle staged for the screen, directed so the crowd, the sound and the product cut together in real time.",
     nextProject: { name: "Native Instruments", slug: "native-instruments" },
@@ -260,6 +205,9 @@ export default function CaseStudy({
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
 
   const project = PROJECT_DB[slug] || PROJECT_DB["native-instruments"];
+  // The gallery is shared with the Archive's contact sheet
+  const gallery = (PROJECTS.find((p) => p.slug === slug) ?? PROJECTS[0])
+    .gallery;
   useHud(project.name, [
     `Client: ${project.client}`,
     `Role: ${project.role}`,
@@ -364,17 +312,17 @@ export default function CaseStudy({
 
           <section className="px-5 md:px-8 pb-32 grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-12 relative z-10 cursor-auto md:cursor-none">
             <ParallaxGalleryImage
-              src={project.images[0]}
+              src={gallery[0]}
               alt="Detail 1"
               className="md:col-span-7 aspect-[4/3]"
             />
             <ParallaxGalleryImage
-              src={project.images[1]}
+              src={gallery[1]}
               alt="Detail 2"
               className="md:col-span-4 md:col-start-9 aspect-[3/4] mt-12 md:mt-40"
             />
             <ParallaxGalleryImage
-              src={project.images[2]}
+              src={gallery[2]}
               alt="Detail 3"
               className="md:col-span-10 md:col-start-2 aspect-[16/9] mt-12 md:mt-32"
             />
